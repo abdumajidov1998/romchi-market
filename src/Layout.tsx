@@ -70,7 +70,7 @@ const BottomNav: React.FC = () => (
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const desktop = useIsDesktop();
   const loc = useLocation();
-  const hideChrome = loc.pathname === '/' || loc.pathname.startsWith('/onboarding');
+  const hideChrome = loc.pathname === '/' || loc.pathname === '/romchi-ish' || loc.pathname.startsWith('/onboarding');
 
   if (hideChrome) return <>{children}</>;
 
