@@ -103,6 +103,14 @@ export const PhoneVerify: React.FC<{
           <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 4 }}>
             <b>{phone}</b> raqamiga 4 raqamli kod yuborildi
           </div>
+          <input
+            type="hidden"
+            autoComplete="one-time-code"
+            onChange={e => {
+              const v = e.target.value.replace(/\D/g, '').slice(0, 4);
+              if (v.length === 4) { setCode(v); }
+            }}
+          />
           <div style={{ display: 'flex', gap: 8, marginTop: 10, marginBottom: 10 }}>
             {[0, 1, 2, 3].map(i => (
               <input
@@ -110,6 +118,7 @@ export const PhoneVerify: React.FC<{
                 maxLength={1}
                 value={code[i] || ''}
                 inputMode="numeric"
+                autoComplete={i === 0 ? 'one-time-code' : 'off'}
                 onChange={e => {
                   const v = e.target.value.replace(/\D/g, '');
                   const arr = code.split('');
@@ -120,6 +129,29 @@ export const PhoneVerify: React.FC<{
                     const next = e.target.parentElement?.children[i + 1] as HTMLInputElement;
                     next?.focus();
                   }
+                  if (newCode.length === 4) {
+                    // Avtomatik tasdiqlash
+                    setTimeout(() => {
+                      const btn = document.querySelector('[data-verify-btn]') as HTMLElement;
+                      btn?.click();
+                    }, 200);
+                  }
+                }}
+                onPaste={e => {
+                  e.preventDefault();
+                  const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
+                  if (pasted.length > 0) {
+                    setCode(pasted);
+                    const last = Math.min(pasted.length, 3);
+                    const target = e.currentTarget.parentElement?.children[last] as HTMLInputElement;
+                    target?.focus();
+                    if (pasted.length === 4) {
+                      setTimeout(() => {
+                        const btn = document.querySelector('[data-verify-btn]') as HTMLElement;
+                        btn?.click();
+                      }, 200);
+                    }
+                  }
                 }}
                 onKeyDown={e => {
                   if (e.key === 'Backspace' && !code[i] && i > 0) {
@@ -129,14 +161,14 @@ export const PhoneVerify: React.FC<{
                 }}
                 style={{
                   width: '100%', textAlign: 'center', fontSize: 28, fontWeight: 800,
-                  padding: '12px 0', border: '2px solid var(--line)', borderRadius: 12,
-                  outline: 'none', background: '#fff',
+                  padding: '12px 0', border: `2px solid ${code[i] ? 'var(--blue)' : 'var(--line)'}`, borderRadius: 12,
+                  outline: 'none', background: '#fff', transition: 'border-color .2s',
                 }}
               />
             ))}
           </div>
           {error && <div style={{ color: '#DC2626', fontSize: 13, marginBottom: 8 }}>⚠️ {error}</div>}
-          <Btn full onClick={verifyCode} style={{ opacity: loading ? .6 : 1 }}>
+          <Btn full onClick={verifyCode} style={{ opacity: loading ? .6 : 1 }} data-verify-btn>
             {loading ? 'Tekshirilmoqda…' : 'Tasdiqlash ✓'}
           </Btn>
           <div style={{ textAlign: 'center', marginTop: 10 }}>

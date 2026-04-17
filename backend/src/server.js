@@ -67,7 +67,7 @@ async function sendSmsViaEskiz(phone, code) {
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       mobile_phone: cleanPhone,
-      message: `Romchi Market tasdiqlash kodi: ${code}`,
+      message: `Romchi Market: ${code} - tasdiqlash kodi\n@romchi-market.onrender.com #${code}`,
       from: '4546',
     }),
   });
