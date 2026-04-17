@@ -7,7 +7,7 @@ import { MapPicker } from '../components/MapPicker';
 import { PhoneVerify } from '../components/PhoneVerify';
 import { SpecIcon } from '../SpecIcon';
 
-const SPECS = ['Termo', 'PVX', 'Alyumin'];
+const SPECS = ['Termo', 'PVX', 'Alyumin', 'Surma'];
 
 export const CreateUsluga: React.FC = () => {
   const nav = useNavigate();
@@ -20,6 +20,7 @@ export const CreateUsluga: React.FC = () => {
   const [priceTermo, setPriceTermo] = React.useState('');
   const [pricePvx, setPricePvx] = React.useState('');
   const [priceAlyumin, setPriceAlyumin] = React.useState('');
+  const [priceSurma, setPriceSurma] = React.useState('');
   const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(null);
   const [telegram, setTelegram] = React.useState('');
   const [saving, setSaving] = React.useState(false);
@@ -42,6 +43,7 @@ export const CreateUsluga: React.FC = () => {
         priceTermo: priceTermo ? Number(priceTermo.replace(/\D/g, '')) : 0,
         pricePvx: pricePvx ? Number(pricePvx.replace(/\D/g, '')) : 0,
         priceAlyumin: priceAlyumin ? Number(priceAlyumin.replace(/\D/g, '')) : 0,
+        priceSurma: priceSurma ? Number(priceSurma.replace(/\D/g, '')) : 0,
         lat: coords?.lat, lng: coords?.lng,
         telegram: telegram.trim() || undefined,
       });
@@ -106,6 +108,11 @@ export const CreateUsluga: React.FC = () => {
         {specs.includes('Alyumin') && (
           <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><SpecIcon name="Alyumin" size={20} /> Alyumin (so'm/m²)</span>}>
             <Input value={priceAlyumin} onChange={e => setPriceAlyumin(e.target.value)} placeholder="180 000" inputMode="numeric" />
+          </Field>
+        )}
+        {specs.includes('Surma') && (
+          <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><SpecIcon name="Surma" size={20} /> Surma eshik (so'm/m²)</span>}>
+            <Input value={priceSurma} onChange={e => setPriceSurma(e.target.value)} placeholder="150 000" inputMode="numeric" />
           </Field>
         )}
         {specs.length === 0 && <div style={{ color: 'var(--muted)', fontSize: 13 }}>Avval yo'nalish tanlang</div>}

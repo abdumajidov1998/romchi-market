@@ -82,7 +82,7 @@ export const api = {
     return req<any[]>('/usluga' + (qs ? '?' + qs : ''));
   },
   uslugaProvider: (id: string | number) => req<any>(`/usluga/${id}`),
-  saveUsluga: (body: { name: string; city: string; district: string; about?: string; specs: string[]; priceTermo?: number; pricePvx?: number; priceAlyumin?: number; lat?: number; lng?: number; telegram?: string }) =>
+  saveUsluga: (body: { name: string; city: string; district: string; about?: string; specs: string[]; priceTermo?: number; pricePvx?: number; priceAlyumin?: number; priceSurma?: number; lat?: number; lng?: number; telegram?: string }) =>
     req<any>('/usluga', { method: 'POST', body: JSON.stringify(body) }),
 
   postJob: (body: { title: string; company: string; type?: string; workType?: string; city: string; district: string; experience?: string; salaryFrom: number; salaryTo: number; specs: string[]; description?: string; badge?: string; lat?: number; lng?: number }) =>

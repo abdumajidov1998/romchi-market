@@ -8,6 +8,7 @@ const PRICES = [
   { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
   { key: 'pricePvx', label: 'PVX', spec: 'PVX' },
   { key: 'priceAlyumin', label: 'Alyumin', spec: 'Alyumin' },
+  { key: 'priceSurma', label: 'Surma', spec: 'Surma' },
 ];
 const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '---';
 const initials = (n: string) => (n || '?').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();

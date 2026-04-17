@@ -358,6 +358,7 @@ const upRow = (r) => {
   if ('price_termo' in r) { r.priceTermo = r.price_termo; delete r.price_termo; }
   if ('price_pvx' in r) { r.pricePvx = r.price_pvx; delete r.price_pvx; }
   if ('price_alyumin' in r) { r.priceAlyumin = r.price_alyumin; delete r.price_alyumin; }
+  if ('price_surma' in r) { r.priceSurma = r.price_surma; delete r.price_surma; }
   return r;
 };
 
@@ -388,19 +389,19 @@ app.get('/api/usluga/:id', async (req, res) => {
 
 app.post('/api/usluga', auth, async (req, res) => {
   try {
-    const { name, city, district, about, specs, priceTermo, pricePvx, priceAlyumin, lat, lng, telegram } = req.body || {};
+    const { name, city, district, about, specs, priceTermo, pricePvx, priceAlyumin, priceSurma, lat, lng, telegram } = req.body || {};
     if (!name || !city || !district || !specs || specs.length === 0) return res.status(400).json({ error: 'Missing fields' });
     const tg = telegram ? String(telegram).replace(/^@/, '').trim() : null;
     const existing = await q('SELECT id FROM usluga_providers WHERE user_id = $1', [req.user.id]);
     if (existing.rows.length) {
-      await q(`UPDATE usluga_providers SET name=$1,city=$2,district=$3,about=$4,specs=$5,price_termo=$6,price_pvx=$7,price_alyumin=$8,lat=$9,lng=$10,telegram=$11 WHERE user_id=$12`,
-        [name, city, district, about || '', JSON.stringify(specs), priceTermo || 0, pricePvx || 0, priceAlyumin || 0, lat ?? null, lng ?? null, tg, req.user.id]);
+      await q(`UPDATE usluga_providers SET name=$1,city=$2,district=$3,about=$4,specs=$5,price_termo=$6,price_pvx=$7,price_alyumin=$8,price_surma=$9,lat=$10,lng=$11,telegram=$12 WHERE user_id=$13`,
+        [name, city, district, about || '', JSON.stringify(specs), priceTermo || 0, pricePvx || 0, priceAlyumin || 0, priceSurma || 0, lat ?? null, lng ?? null, tg, req.user.id]);
       const r = await q('SELECT * FROM usluga_providers WHERE user_id=$1', [req.user.id]);
       return res.json(upRow(r.rows[0]));
     }
-    const r = await q(`INSERT INTO usluga_providers (user_id,name,city,district,about,specs,price_termo,price_pvx,price_alyumin,lat,lng,telegram)
-                       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
-      [req.user.id, name, city, district, about || '', JSON.stringify(specs), priceTermo || 0, pricePvx || 0, priceAlyumin || 0, lat ?? null, lng ?? null, tg]);
+    const r = await q(`INSERT INTO usluga_providers (user_id,name,city,district,about,specs,price_termo,price_pvx,price_alyumin,price_surma,lat,lng,telegram)
+                       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`,
+      [req.user.id, name, city, district, about || '', JSON.stringify(specs), priceTermo || 0, pricePvx || 0, priceAlyumin || 0, priceSurma || 0, lat ?? null, lng ?? null, tg]);
     const ur = await q('SELECT * FROM usluga_providers WHERE id=$1', [r.rows[0].id]);
     res.json(upRow(ur.rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }

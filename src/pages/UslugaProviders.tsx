@@ -5,11 +5,12 @@ import { useIsDesktop } from '../Layout';
 import { api } from '../api';
 import { SpecIcon } from '../SpecIcon';
 
-const SPECS = ['Termo', 'PVX', 'Alyumin'];
+const SPECS = ['Termo', 'PVX', 'Alyumin', 'Surma'];
 const PRICES = [
   { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
   { key: 'pricePvx', label: 'PVX', spec: 'PVX' },
   { key: 'priceAlyumin', label: 'Alyumin', spec: 'Alyumin' },
+  { key: 'priceSurma', label: 'Surma', spec: 'Surma' },
 ];
 const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '---';
 
