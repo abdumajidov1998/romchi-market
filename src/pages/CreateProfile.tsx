@@ -6,6 +6,7 @@ import { SpecIcon } from '../SpecIcon';
 import { api, auth } from '../api';
 import { MapPicker } from '../components/MapPicker';
 
+
 const SPECS = ['Termo', 'PVX', 'Alyumin'];
 const RED = '#DC2626';
 const RED_50 = '#FEE2E2';
