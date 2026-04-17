@@ -9,6 +9,7 @@ export const Onboarding: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 20 }}>
       <div style={{ width: '100%', maxWidth: 460, background: '#fff', borderRadius: 24, padding: 28, boxShadow: 'var(--shadow-lg)' }}>
+        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#f5f5f5', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer', marginBottom: 10 }}>←</button>
         <div style={{ marginBottom: 18, display: 'flex', justifyContent: 'center' }}>
           <img src="/images/onboarding.png" alt="Romchi Ish platformasiga xush kelibsiz" style={{ width: '100%', maxWidth: 420, height: 'auto', display: 'block' }} />
         </div>
