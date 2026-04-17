@@ -19,10 +19,10 @@ const ProviderCard: React.FC<{ p: any }> = ({ p }) => (
     <Link to={`/usluga/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
       <div style={{ display: 'flex', gap: 12 }}>
         {p.specs && p.specs.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
-            {p.specs.slice(0, 3).map((s: string) => (
-              <div key={s} style={{ width: 44, height: 44, borderRadius: 10, background: 'var(--blue-50)', display: 'grid', placeItems: 'center' }}>
-                <SpecIcon name={s} size={36} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
+            {p.specs.slice(0, 4).map((s: string) => (
+              <div key={s} style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--blue-50)', display: 'grid', placeItems: 'center' }}>
+                <SpecIcon name={s} size={28} />
               </div>
             ))}
           </div>
@@ -41,18 +41,18 @@ const ProviderCard: React.FC<{ p: any }> = ({ p }) => (
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
+      <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
         {PRICES.map(m => {
           const price = p[m.key] || 0;
           if (!price) return null;
           return (
             <div key={m.key} style={{
-              flex: 1, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 8px',
-              background: 'var(--blue-50)', borderRadius: 8, fontSize: 12,
+              display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
+              background: 'var(--blue-50)', borderRadius: 8, fontSize: 11,
             }}>
-              <SpecIcon name={m.spec} size={18} />
+              <SpecIcon name={m.spec} size={16} />
               <span style={{ fontWeight: 700, color: 'var(--blue)' }}>{fmt(price)}</span>
-              <span style={{ color: 'var(--muted)', fontSize: 10 }}>m²</span>
+              <span style={{ color: 'var(--muted)', fontSize: 9 }}>m²</span>
             </div>
           );
         })}
@@ -109,13 +109,13 @@ export const UslugaProviders: React.FC = () => {
           const on = spec === s;
           return (
             <button key={s} type="button" onClick={() => setSpec(on ? null : s)} style={{
-              padding: '10px 6px', borderRadius: 14, cursor: 'pointer',
+              padding: '8px 4px', borderRadius: 12, cursor: 'pointer',
               background: on ? 'var(--blue-50)' : '#fff',
               border: `1.5px solid ${on ? 'var(--blue)' : 'var(--line)'}`,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             }}>
-              <SpecIcon name={s} size={32} />
-              <div style={{ fontWeight: 700, fontSize: 12, color: on ? 'var(--blue)' : 'var(--ink)' }}>{s}</div>
+              <SpecIcon name={s} size={28} />
+              <div style={{ fontWeight: 700, fontSize: 11, color: on ? 'var(--blue)' : 'var(--ink)' }}>{s}</div>
             </button>
           );
         })}
