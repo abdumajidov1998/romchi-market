@@ -41,7 +41,7 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { phone, password, role, name, city, district, specs, experience, about, lat, lng, telegram, salaryFrom, salaryTo } = req.body || {};
     if (!phone || !password || !role) return res.status(400).json({ error: 'phone, password, role required' });
-    if (!['worker', 'employer'].includes(role)) return res.status(400).json({ error: 'invalid role' });
+    if (!['worker', 'employer', 'waste_buyer'].includes(role)) return res.status(400).json({ error: 'invalid role' });
     const existing = await q('SELECT id FROM users WHERE phone = $1', [phone]);
     if (existing.rows.length) return res.status(409).json({ error: 'Phone already registered' });
 
@@ -204,6 +204,61 @@ app.post('/api/jobs', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// === WASTE BUYERS ===
+const wbRow = (r) => {
+  if (!r) return r;
+  if ('verified' in r) r.verified = !!r.verified;
+  if ('top' in r) r.top = !!r.top;
+  if ('price_termo' in r) { r.priceTermo = r.price_termo; delete r.price_termo; }
+  if ('price_pvx_oq' in r) { r.pricePvxOq = r.price_pvx_oq; delete r.price_pvx_oq; }
+  if ('price_pvx_rangli' in r) { r.pricePvxRangli = r.price_pvx_rangli; delete r.price_pvx_rangli; }
+  if ('price_alyumin' in r) { r.priceAlyumin = r.price_alyumin; delete r.price_alyumin; }
+  return r;
+};
+
+app.get('/api/waste-buyers', async (req, res) => {
+  try {
+    const { city, q: qr } = req.query;
+    let sql = 'SELECT waste_buyers.*, users.phone AS phone FROM waste_buyers LEFT JOIN users ON users.id = waste_buyers.user_id WHERE 1=1';
+    const params = [];
+    let n = 1;
+    if (city) { sql += ` AND city = $${n++}`; params.push(city); }
+    if (qr) { sql += ` AND (name ILIKE $${n})`; params.push(`%${qr}%`); n++; }
+    sql += ' ORDER BY top DESC, rating DESC, waste_buyers.id DESC';
+    const r = await q(sql, params);
+    res.json(r.rows.map(wbRow));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/waste-buyers/:id', async (req, res) => {
+  try {
+    const r = await q('SELECT waste_buyers.*, users.phone AS phone FROM waste_buyers LEFT JOIN users ON users.id = waste_buyers.user_id WHERE waste_buyers.id = $1', [req.params.id]);
+    const wb = r.rows[0] ? wbRow(r.rows[0]) : null;
+    if (!wb) return res.status(404).json({ error: 'Not found' });
+    res.json(wb);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/waste-buyers', auth, async (req, res) => {
+  try {
+    const { name, city, district, about, priceTermo, pricePvxOq, pricePvxRangli, priceAlyumin, lat, lng, telegram } = req.body || {};
+    if (!name || !city || !district) return res.status(400).json({ error: 'Missing fields' });
+    const tg = telegram ? String(telegram).replace(/^@/, '').trim() : null;
+    const existing = await q('SELECT id FROM waste_buyers WHERE user_id = $1', [req.user.id]);
+    if (existing.rows.length) {
+      await q(`UPDATE waste_buyers SET name=$1,city=$2,district=$3,about=$4,price_termo=$5,price_pvx_oq=$6,price_pvx_rangli=$7,price_alyumin=$8,lat=$9,lng=$10,telegram=$11 WHERE user_id=$12`,
+        [name, city, district, about || '', priceTermo || 0, pricePvxOq || 0, pricePvxRangli || 0, priceAlyumin || 0, lat ?? null, lng ?? null, tg, req.user.id]);
+      const r = await q('SELECT * FROM waste_buyers WHERE user_id=$1', [req.user.id]);
+      return res.json(wbRow(r.rows[0]));
+    }
+    const r = await q(`INSERT INTO waste_buyers (user_id,name,city,district,about,price_termo,price_pvx_oq,price_pvx_rangli,price_alyumin,lat,lng,telegram)
+                       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
+      [req.user.id, name, city, district, about || '', priceTermo || 0, pricePvxOq || 0, pricePvxRangli || 0, priceAlyumin || 0, lat ?? null, lng ?? null, tg]);
+    const wr = await q('SELECT * FROM waste_buyers WHERE id=$1', [r.rows[0].id]);
+    res.json(wbRow(wr.rows[0]));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 async function seed() {
   const r = await q('SELECT COUNT(*) as c FROM workers');
   if (parseInt(r.rows[0].c) === 0) {
@@ -234,6 +289,25 @@ async function seed() {
         [empId, j.title, j.company, j.type, j.work_type, j.city, j.district, j.experience, j.salary_from, j.salary_to, JSON.stringify(j.specs), j.description, j.badge]);
     }
     console.log('Seeded sample data.');
+  }
+
+  // Seed waste buyers
+  const wbr = await q('SELECT COUNT(*) as c FROM waste_buyers');
+  if (parseInt(wbr.rows[0].c) === 0) {
+    const h = bcrypt.hashSync('demo1234', 10);
+    const sampleWB = [
+      { name: 'Alisher Atxodchi', city: 'Toshkent', district: 'Sergeli', about: 'Barcha turdagi atxodlarni olamiz. Tez va qulay.', price_termo: 4000, price_pvx_oq: 10000, price_pvx_rangli: 5000, price_alyumin: 10000, rating: 4.7, verified: 1, top: 1 },
+      { name: 'Dilshod Metall', city: 'Toshkent', district: 'Chilonzor', about: 'Alyumin va PVX atxodlarini yuqori narxda sotib olamiz.', price_termo: 3500, price_pvx_oq: 9000, price_pvx_rangli: 4500, price_alyumin: 11000, rating: 4.5, verified: 1, top: 0 },
+      { name: 'Farrux Plast', city: 'Toshkent', district: 'Yunusobod', about: 'PVX atxodlari bo\'yicha eng yaxshi narx.', price_termo: 3000, price_pvx_oq: 12000, price_pvx_rangli: 6000, price_alyumin: 9000, rating: 4.9, verified: 0, top: 1 },
+    ];
+    for (let i = 0; i < sampleWB.length; i++) {
+      const wb = sampleWB[i];
+      const ur = await q('INSERT INTO users (phone, password_hash, role) VALUES ($1,$2,$3) RETURNING id', [`+99891000000${i + 1}`, h, 'waste_buyer']);
+      await q(`INSERT INTO waste_buyers (user_id,name,city,district,about,price_termo,price_pvx_oq,price_pvx_rangli,price_alyumin,rating,verified,top)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [ur.rows[0].id, wb.name, wb.city, wb.district, wb.about, wb.price_termo, wb.price_pvx_oq, wb.price_pvx_rangli, wb.price_alyumin, wb.rating, wb.verified, wb.top]);
+    }
+    console.log('Seeded waste buyers.');
   }
 }
 

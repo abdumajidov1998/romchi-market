@@ -10,6 +10,8 @@ import { Jobs } from './pages/Jobs';
 import { JobDetail } from './pages/JobDetail';
 import { PostJob } from './pages/PostJob';
 import { Chat, Profile } from './pages/Stub';
+import { WasteBuyers } from './pages/WasteBuyers';
+import { WasteBuyerProfile } from './pages/WasteBuyerProfile';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Route path="/workers" element={<Workers />} />
           <Route path="/workers/:id" element={<WorkerProfile />} />
           <Route path="/post" element={<PostJob />} />
+          <Route path="/atxod" element={<WasteBuyers />} />
+          <Route path="/atxod/:id" element={<WasteBuyerProfile />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />

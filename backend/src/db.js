@@ -13,7 +13,7 @@ async function init() {
       id SERIAL PRIMARY KEY,
       phone TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
-      role TEXT NOT NULL CHECK(role IN ('worker','employer')),
+      role TEXT NOT NULL CHECK(role IN ('worker','employer','waste_buyer')),
       created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
@@ -35,6 +35,26 @@ async function init() {
       telegram TEXT,
       salary_from INTEGER,
       salary_to INTEGER,
+      created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS waste_buyers (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      city TEXT NOT NULL,
+      district TEXT NOT NULL,
+      about TEXT DEFAULT '',
+      price_termo INTEGER DEFAULT 0,
+      price_pvx_oq INTEGER DEFAULT 0,
+      price_pvx_rangli INTEGER DEFAULT 0,
+      price_alyumin INTEGER DEFAULT 0,
+      rating REAL DEFAULT 0,
+      verified INTEGER DEFAULT 0,
+      top INTEGER DEFAULT 0,
+      lat REAL,
+      lng REAL,
+      telegram TEXT,
       created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 

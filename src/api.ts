@@ -62,6 +62,15 @@ export const api = {
     req<any>(`/jobs/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteJob: (id: string | number) =>
     req<{ ok: boolean }>(`/jobs/${id}`, { method: 'DELETE' }),
+  wasteBuyers: (params?: { city?: string; q?: string }) => {
+    const clean = Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v));
+    const qs = new URLSearchParams(clean as any).toString();
+    return req<any[]>('/waste-buyers' + (qs ? '?' + qs : ''));
+  },
+  wasteBuyer: (id: string | number) => req<any>(`/waste-buyers/${id}`),
+  saveWasteBuyer: (body: { name: string; city: string; district: string; about?: string; priceTermo?: number; pricePvxOq?: number; pricePvxRangli?: number; priceAlyumin?: number; lat?: number; lng?: number; telegram?: string }) =>
+    req<any>('/waste-buyers', { method: 'POST', body: JSON.stringify(body) }),
+
   postJob: (body: { title: string; company: string; type?: string; workType?: string; city: string; district: string; experience?: string; salaryFrom: number; salaryTo: number; specs: string[]; description?: string; badge?: string; lat?: number; lng?: number }) =>
     req<any>('/jobs', { method: 'POST', body: JSON.stringify(body) }),
 };

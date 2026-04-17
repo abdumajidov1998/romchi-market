@@ -20,7 +20,7 @@ const SECTIONS = [
     color: '#ECFDF5',
     fg: '#10B981',
     path: '/atxod',
-    active: false,
+    active: true,
   },
   {
     id: 'stanok',

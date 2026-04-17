@@ -1,0 +1,108 @@
+import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Avatar, Badge, Btn, Card, EmptyState, TelegramIcon } from '../ui';
+import { api } from '../api';
+
+const MATERIALS = [
+  { key: 'priceTermo', label: 'Termo', icon: '🔥' },
+  { key: 'pricePvxOq', label: 'PVX Oq', icon: '⬜' },
+  { key: 'pricePvxRangli', label: 'PVX Rangli', icon: '🟫' },
+  { key: 'priceAlyumin', label: 'Alyumin', icon: '🪟' },
+];
+
+const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '—';
+const initials = (n: string) => (n || '?').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+
+export const WasteBuyerProfile: React.FC = () => {
+  const { id } = useParams();
+  const nav = useNavigate();
+  const [b, setB] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
+
+  React.useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    api.wasteBuyer(id)
+      .then(d => { setB(d); setError(''); })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <EmptyState icon="⏳" title="Yuklanmoqda…" sub="" />;
+  if (error || !b) return <EmptyState icon="🔎" title="Topilmadi" sub={error} ctaLabel="Orqaga" onCta={() => nav('/atxod')} />;
+
+  return (
+    <div style={{ maxWidth: 540, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
+        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>←</button>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>Atxod oluvchi</div>
+        <div style={{ width: 38 }} />
+      </div>
+
+      <Card style={{ textAlign: 'center', padding: '22px 16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+          <Avatar initials={initials(b.name)} color="green" size={80} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, alignItems: 'center' }}>
+          <div style={{ fontWeight: 800, fontSize: 18 }}>{b.name}</div>
+          {b.verified && <span style={{ width: 16, height: 16, borderRadius: 8, background: 'var(--blue)', color: '#fff', display: 'inline-grid', placeItems: 'center', fontSize: 10 }}>✓</span>}
+        </div>
+        <div style={{ color: 'var(--muted)', fontSize: 14, marginTop: 2 }}>📍 {b.city} · {b.district}</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 16 }}>
+          <div><b>{(b.rating || 0).toFixed(1)} <span style={{ color: 'var(--amber)' }}>★</span></b><div style={{ fontSize: 11, color: 'var(--muted)' }}>Reyting</div></div>
+          <div><b>{b.verified ? '✓ Tasdiqlangan' : 'Yangi'}</b><div style={{ fontSize: 11, color: 'var(--muted)' }}>Holat</div></div>
+        </div>
+      </Card>
+
+      <Card style={{ marginTop: 12 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>💰 Olinadigan narxlar (1 kg)</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {MATERIALS.map(m => {
+            const price = b[m.key] || 0;
+            return (
+              <div key={m.key} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 14px', background: price > 0 ? '#ECFDF5' : 'var(--bg)', borderRadius: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 20 }}>{m.icon}</span>
+                  <span style={{ fontWeight: 600, fontSize: 15 }}>{m.label}</span>
+                </div>
+                <span style={{ fontWeight: 800, fontSize: 16, color: price > 0 ? '#10B981' : 'var(--muted)' }}>
+                  {price > 0 ? `${fmt(price)} so'm` : 'Olmaymiz'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {b.about && (
+        <Card style={{ marginTop: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Haqida</div>
+          <div style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>{b.about}</div>
+        </Card>
+      )}
+
+      {(b.lat && b.lng) && (
+        <Card style={{ marginTop: 12, padding: 0, overflow: 'hidden' }}>
+          <iframe
+            title="map"
+            src={`https://maps.google.com/maps?q=${b.lat},${b.lng}&z=15&output=embed`}
+            style={{ width: '100%', height: 200, border: 'none', display: 'block' }}
+          />
+        </Card>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
+        <a href={b.phone ? `tel:${b.phone}` : undefined} style={{ textDecoration: 'none', opacity: b.phone ? 1 : .5, pointerEvents: b.phone ? 'auto' : 'none' }}>
+          <Btn full>📞 Qo'ng'iroq</Btn>
+        </a>
+        <a href={b.telegram ? `https://t.me/${b.telegram}` : b.phone ? `https://t.me/+${String(b.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', opacity: (b.telegram || b.phone) ? 1 : .5, pointerEvents: (b.telegram || b.phone) ? 'auto' : 'none' }}>
+          <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
+        </a>
+      </div>
+    </div>
+  );
+};
