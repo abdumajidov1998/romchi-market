@@ -85,6 +85,11 @@ export const api = {
   saveUsluga: (body: { name: string; city: string; district: string; about?: string; specs: string[]; priceTermo?: number; pricePvx?: number; priceAlyumin?: number; priceSurma?: number; lat?: number; lng?: number; telegram?: string }) =>
     req<any>('/usluga', { method: 'POST', body: JSON.stringify(body) }),
 
+  myProfiles: () => req<{ worker: any; wasteBuyer: any; usluga: any }>('/me/profiles'),
+  deleteWorker: () => req<{ ok: boolean }>('/workers', { method: 'DELETE' }),
+  deleteWasteBuyer: () => req<{ ok: boolean }>('/waste-buyers', { method: 'DELETE' }),
+  deleteUsluga: () => req<{ ok: boolean }>('/usluga', { method: 'DELETE' }),
+
   postJob: (body: { title: string; company: string; type?: string; workType?: string; city: string; district: string; experience?: string; salaryFrom: number; salaryTo: number; specs: string[]; description?: string; badge?: string; lat?: number; lng?: number }) =>
     req<any>('/jobs', { method: 'POST', body: JSON.stringify(body) }),
 };

@@ -226,6 +226,13 @@ app.post('/api/workers', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.delete('/api/workers', auth, async (req, res) => {
+  try {
+    await q('DELETE FROM workers WHERE user_id = $1', [req.user.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/jobs', async (req, res) => {
   try {
     const { city, spec, query: qr } = req.query;
@@ -350,6 +357,13 @@ app.post('/api/waste-buyers', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.delete('/api/waste-buyers', auth, async (req, res) => {
+  try {
+    await q('DELETE FROM waste_buyers WHERE user_id = $1', [req.user.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // === USLUGACHILAR ===
 const upRow = (r) => {
   if (!r) return r;
@@ -404,6 +418,27 @@ app.post('/api/usluga', auth, async (req, res) => {
       [req.user.id, name, city, district, about || '', JSON.stringify(specs), priceTermo || 0, pricePvx || 0, priceAlyumin || 0, priceSurma || 0, lat ?? null, lng ?? null, tg]);
     const ur = await q('SELECT * FROM usluga_providers WHERE id=$1', [r.rows[0].id]);
     res.json(upRow(ur.rows[0]));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/usluga', auth, async (req, res) => {
+  try {
+    await q('DELETE FROM usluga_providers WHERE user_id = $1', [req.user.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// /api/me ga profillar qo'shish
+app.get('/api/me/profiles', auth, async (req, res) => {
+  try {
+    const worker = await q('SELECT * FROM workers WHERE user_id = $1', [req.user.id]);
+    const wb = await q('SELECT * FROM waste_buyers WHERE user_id = $1', [req.user.id]);
+    const up = await q('SELECT * FROM usluga_providers WHERE user_id = $1', [req.user.id]);
+    res.json({
+      worker: worker.rows[0] ? row(worker.rows[0]) : null,
+      wasteBuyer: wb.rows[0] ? wbRow(wb.rows[0]) : null,
+      usluga: up.rows[0] ? upRow(up.rows[0]) : null,
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
