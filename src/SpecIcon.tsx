@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ICONS: Record<string, { src: string; filter?: string }> = {
+const ICONS: Record<string, { src: string; filter?: string; style?: string }> = {
   Termo: { src: '/images/pvx.png' },
   PVX: { src: '/images/termo.png' },
   'PVX Oq': { src: '/images/termo.png', filter: 'invert(1) brightness(1.8) contrast(0.6) sepia(0) saturate(0)' },
