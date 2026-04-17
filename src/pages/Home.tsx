@@ -33,13 +33,13 @@ const SECTIONS = [
     active: false,
   },
   {
-    id: 'asbob',
+    id: 'usluga',
     icon: '🛠️',
-    title: 'Asbob-uskuna',
-    sub: 'Asbob va uskuna sotish, sotib olish',
+    title: 'Uslugachilar',
+    sub: 'Turli xizmatlar va uslugalar',
     color: '#FDF2F8',
     fg: '#EC4899',
-    path: '/asbob',
+    path: '/usluga',
     active: false,
   },
 ];
