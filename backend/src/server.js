@@ -421,6 +421,68 @@ app.post('/api/usluga', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// === STANOK REMONT ===
+const smRow = (r) => {
+  if (!r) return r;
+  if (typeof r.specs === 'string') r.specs = JSON.parse(r.specs);
+  if ('verified' in r) r.verified = !!r.verified;
+  if ('urgent' in r) r.urgent = !!r.urgent;
+  if ('price_diagnostika' in r) { r.priceDiagnostika = r.price_diagnostika; delete r.price_diagnostika; }
+  return r;
+};
+
+app.get('/api/stanok', async (req, res) => {
+  try {
+    const { city, spec, q: qr } = req.query;
+    let sql = 'SELECT stanok_masters.*, users.phone AS phone FROM stanok_masters LEFT JOIN users ON users.id = stanok_masters.user_id WHERE 1=1';
+    const params = [];
+    let n = 1;
+    if (city) { sql += ` AND city = $${n++}`; params.push(city); }
+    if (qr) { sql += ` AND (name ILIKE $${n})`; params.push(`%${qr}%`); n++; }
+    sql += ' ORDER BY verified DESC, stanok_masters.id DESC';
+    const r = await q(sql, params);
+    let list = r.rows.map(smRow);
+    if (spec) list = list.filter(m => m.specs.includes(spec));
+    res.json(list);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/stanok/:id', async (req, res) => {
+  try {
+    const r = await q('SELECT stanok_masters.*, users.phone AS phone FROM stanok_masters LEFT JOIN users ON users.id = stanok_masters.user_id WHERE stanok_masters.id = $1', [req.params.id]);
+    const m = r.rows[0] ? smRow(r.rows[0]) : null;
+    if (!m) return res.status(404).json({ error: 'Not found' });
+    res.json(m);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/stanok', auth, async (req, res) => {
+  try {
+    const { name, city, district, about, specs, priceDiagnostika, urgent, experience, lat, lng, telegram } = req.body || {};
+    if (!name || !city || !district || !specs || specs.length === 0) return res.status(400).json({ error: 'Missing fields' });
+    const tg = telegram ? String(telegram).replace(/^@/, '').trim() : null;
+    const existing = await q('SELECT id FROM stanok_masters WHERE user_id = $1', [req.user.id]);
+    if (existing.rows.length) {
+      await q(`UPDATE stanok_masters SET name=$1,city=$2,district=$3,about=$4,specs=$5,price_diagnostika=$6,urgent=$7,experience=$8,lat=$9,lng=$10,telegram=$11 WHERE user_id=$12`,
+        [name, city, district, about || '', JSON.stringify(specs), priceDiagnostika || 0, urgent ? 1 : 0, experience || '', lat ?? null, lng ?? null, tg, req.user.id]);
+      const r = await q('SELECT * FROM stanok_masters WHERE user_id=$1', [req.user.id]);
+      return res.json(smRow(r.rows[0]));
+    }
+    const r = await q(`INSERT INTO stanok_masters (user_id,name,city,district,about,specs,price_diagnostika,urgent,experience,lat,lng,telegram)
+                       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
+      [req.user.id, name, city, district, about || '', JSON.stringify(specs), priceDiagnostika || 0, urgent ? 1 : 0, experience || '', lat ?? null, lng ?? null, tg]);
+    const mr = await q('SELECT * FROM stanok_masters WHERE id=$1', [r.rows[0].id]);
+    res.json(smRow(mr.rows[0]));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/stanok', auth, async (req, res) => {
+  try {
+    await q('DELETE FROM stanok_masters WHERE user_id = $1', [req.user.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.delete('/api/usluga', auth, async (req, res) => {
   try {
     await q('DELETE FROM usluga_providers WHERE user_id = $1', [req.user.id]);
@@ -434,10 +496,12 @@ app.get('/api/me/profiles', auth, async (req, res) => {
     const worker = await q('SELECT * FROM workers WHERE user_id = $1', [req.user.id]);
     const wb = await q('SELECT * FROM waste_buyers WHERE user_id = $1', [req.user.id]);
     const up = await q('SELECT * FROM usluga_providers WHERE user_id = $1', [req.user.id]);
+    const sm = await q('SELECT * FROM stanok_masters WHERE user_id = $1', [req.user.id]);
     res.json({
       worker: worker.rows[0] ? row(worker.rows[0]) : null,
       wasteBuyer: wb.rows[0] ? wbRow(wb.rows[0]) : null,
       usluga: up.rows[0] ? upRow(up.rows[0]) : null,
+      stanok: sm.rows[0] ? smRow(sm.rows[0]) : null,
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -510,6 +574,26 @@ async function seed() {
         [ur.rows[0].id, u.name, u.city, u.district, u.about, JSON.stringify(u.specs), u.price_termo, u.price_pvx, u.price_alyumin, u.price_surma, u.verified]);
     }
     console.log('Seeded usluga providers.');
+  }
+
+  // Seed stanok masters
+  const smr = await q('SELECT COUNT(*) as c FROM stanok_masters');
+  if (parseInt(smr.rows[0].c) === 0) {
+    const h = bcrypt.hashSync('demo1234', 10);
+    const sampleSM = [
+      { name: 'Anvar Stanok Servis', city: 'Toshkent', district: 'Chilonzor', specs: ['Kesish stanogi', 'Frezerlash stanogi'], about: 'Barcha turdagi kesish va frezerlash stanoklarini ta\'mirlaymiz. 10 yillik tajriba.', price_diagnostika: 200000, urgent: 1, experience: '5+ yil', verified: 1 },
+      { name: 'Rustam Arra Chaxlovchi', city: 'Toshkent', district: 'Sergeli', specs: ['Arra chaxlovchi'], about: 'Diskali, lentali arralarni chaxlaymiz. Sifatli va tez.', price_diagnostika: 50000, urgent: 0, experience: '3-5 yil', verified: 1 },
+      { name: 'Bobur Kompressor Servis', city: 'Toshkent', district: 'Yunusobod', specs: ['Kompressor', 'Pressovka stanogi'], about: 'Kompressor va press stanoklari bo\'yicha mutaxassis.', price_diagnostika: 150000, urgent: 1, experience: '5+ yil', verified: 0 },
+      { name: 'Sherzod Universal Usta', city: 'Toshkent', district: 'Yashnobod', specs: ['Kesish stanogi', 'Payvandlash stanogi', 'Kompressor', 'Arra chaxlovchi'], about: 'Barcha turdagi stanoklar. 24/7 chiqaman.', price_diagnostika: 100000, urgent: 1, experience: '5+ yil', verified: 1 },
+    ];
+    for (let i = 0; i < sampleSM.length; i++) {
+      const m = sampleSM[i];
+      const ur = await q('INSERT INTO users (phone, password_hash, role) VALUES ($1,$2,$3) RETURNING id', [`+99893000000${i + 1}`, h, 'stanok']);
+      await q(`INSERT INTO stanok_masters (user_id,name,city,district,about,specs,price_diagnostika,urgent,experience,verified)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [ur.rows[0].id, m.name, m.city, m.district, m.about, JSON.stringify(m.specs), m.price_diagnostika, m.urgent ? 1 : 0, m.experience, m.verified]);
+    }
+    console.log('Seeded stanok masters.');
   }
 }
 

@@ -16,6 +16,9 @@ import { CreateWasteBuyer } from './pages/CreateWasteBuyer';
 import { UslugaProviders } from './pages/UslugaProviders';
 import { UslugaProfile } from './pages/UslugaProfile';
 import { CreateUsluga } from './pages/CreateUsluga';
+import { StanokMasters } from './pages/StanokMasters';
+import { StanokProfile } from './pages/StanokProfile';
+import { CreateStanok } from './pages/CreateStanok';
 
 function App() {
   return (
@@ -36,6 +39,9 @@ function App() {
           <Route path="/usluga" element={<UslugaProviders />} />
           <Route path="/usluga/create" element={<CreateUsluga />} />
           <Route path="/usluga/:id" element={<UslugaProfile />} />
+          <Route path="/stanok" element={<StanokMasters />} />
+          <Route path="/stanok/create" element={<CreateStanok />} />
+          <Route path="/stanok/:id" element={<StanokProfile />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />

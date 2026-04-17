@@ -73,6 +73,7 @@ export const Profile: React.FC = () => {
       if (type === 'worker') await api.deleteWorker();
       if (type === 'wasteBuyer') await api.deleteWasteBuyer();
       if (type === 'usluga') await api.deleteUsluga();
+      if (type === 'stanok') await api.deleteStanok();
       await load();
     } catch {}
     finally { setDeleting(''); }
@@ -89,7 +90,7 @@ export const Profile: React.FC = () => {
     </div>
   );
 
-  const hasAny = profiles?.worker || profiles?.wasteBuyer || profiles?.usluga;
+  const hasAny = profiles?.worker || profiles?.wasteBuyer || profiles?.usluga || profiles?.stanok;
 
   return (
     <div style={{ maxWidth: 540, margin: '0 auto' }}>
@@ -126,6 +127,17 @@ export const Profile: React.FC = () => {
         />
       )}
 
+      {profiles?.stanok && (
+        <ProfileCard
+          icon="⚙️" title="Stanok ustasi"
+          name={profiles.stanok.name}
+          sub={`📍 ${profiles.stanok.city} · ${(profiles.stanok.specs || []).join(', ')}`}
+          editPath="/stanok/create"
+          onDelete={() => del('stanok')}
+          deleting={deleting === 'stanok'}
+        />
+      )}
+
       {profiles?.usluga && (
         <ProfileCard
           icon="🛠️" title="Uslugachi"
@@ -159,6 +171,12 @@ export const Profile: React.FC = () => {
           <button type="button" onClick={() => nav('/atxod/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}>
             <div style={{ fontSize: 20 }}>♻️</div>
             <div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Atxodchi</div>
+          </button>
+        )}
+        {!profiles?.stanok && (
+          <button type="button" onClick={() => nav('/stanok/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}>
+            <div style={{ fontSize: 20 }}>⚙️</div>
+            <div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Stanokchi</div>
           </button>
         )}
         {!profiles?.usluga && (

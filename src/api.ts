@@ -85,6 +85,16 @@ export const api = {
   saveUsluga: (body: { name: string; city: string; district: string; about?: string; specs: string[]; priceTermo?: number; pricePvx?: number; priceAlyumin?: number; priceSurma?: number; lat?: number; lng?: number; telegram?: string }) =>
     req<any>('/usluga', { method: 'POST', body: JSON.stringify(body) }),
 
+  stanokMasters: (params?: { city?: string; spec?: string; q?: string }) => {
+    const clean = Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v));
+    const qs = new URLSearchParams(clean as any).toString();
+    return req<any[]>('/stanok' + (qs ? '?' + qs : ''));
+  },
+  stanokMaster: (id: string | number) => req<any>(`/stanok/${id}`),
+  saveStanok: (body: { name: string; city: string; district: string; about?: string; specs: string[]; priceDiagnostika?: number; urgent?: boolean; experience?: string; lat?: number; lng?: number; telegram?: string }) =>
+    req<any>('/stanok', { method: 'POST', body: JSON.stringify(body) }),
+  deleteStanok: () => req<{ ok: boolean }>('/stanok', { method: 'DELETE' }),
+
   myProfiles: () => req<{ worker: any; wasteBuyer: any; usluga: any }>('/me/profiles'),
   deleteWorker: () => req<{ ok: boolean }>('/workers', { method: 'DELETE' }),
   deleteWasteBuyer: () => req<{ ok: boolean }>('/waste-buyers', { method: 'DELETE' }),
