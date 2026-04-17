@@ -2,12 +2,13 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Badge, Btn, Card, EmptyState, TelegramIcon } from '../ui';
 import { api } from '../api';
+import { SpecIcon } from '../SpecIcon';
 
 const MATERIALS = [
-  { key: 'priceTermo', label: 'Termo', icon: '🔥' },
-  { key: 'pricePvxOq', label: 'PVX Oq', icon: '⬜' },
-  { key: 'pricePvxRangli', label: 'PVX Rangli', icon: '🟫' },
-  { key: 'priceAlyumin', label: 'Alyumin', icon: '🪟' },
+  { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
+  { key: 'pricePvxOq', label: 'PVX Oq', spec: 'PVX' },
+  { key: 'pricePvxRangli', label: 'PVX Rangli', spec: 'PVX' },
+  { key: 'priceAlyumin', label: 'Alyumin', spec: 'Alyumin' },
 ];
 
 const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '—';
@@ -66,7 +67,7 @@ export const WasteBuyerProfile: React.FC = () => {
                 padding: '12px 14px', background: price > 0 ? '#ECFDF5' : 'var(--bg)', borderRadius: 12,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 20 }}>{m.icon}</span>
+                  <SpecIcon name={m.spec} size={32} />
                   <span style={{ fontWeight: 600, fontSize: 15 }}>{m.label}</span>
                 </div>
                 <span style={{ fontWeight: 800, fontSize: 16, color: price > 0 ? '#10B981' : 'var(--muted)' }}>

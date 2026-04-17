@@ -4,12 +4,13 @@ import { Card, Btn, Badge, EmptyState, TelegramIcon } from '../ui';
 import { useIsDesktop } from '../Layout';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { SpecIcon } from '../SpecIcon';
 
 const MATERIALS = [
-  { key: 'priceTermo', label: 'Termo', icon: '🔥' },
-  { key: 'pricePvxOq', label: 'PVX Oq', icon: '⬜' },
-  { key: 'pricePvxRangli', label: 'PVX Rangli', icon: '🟫' },
-  { key: 'priceAlyumin', label: 'Alyumin', icon: '🪟' },
+  { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
+  { key: 'pricePvxOq', label: 'PVX Oq', spec: 'PVX' },
+  { key: 'pricePvxRangli', label: 'PVX Rangli', spec: 'PVX' },
+  { key: 'priceAlyumin', label: 'Alyumin', spec: 'Alyumin' },
 ];
 
 const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '—';
@@ -36,10 +37,10 @@ const BuyerCard: React.FC<{ b: any }> = ({ b }) => (
           const price = b[m.key] || 0;
           return (
             <div key={m.key} style={{
-              display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
+              display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px',
               background: price > 0 ? 'var(--blue-50)' : 'var(--bg)', borderRadius: 10, fontSize: 13,
             }}>
-              <span>{m.icon}</span>
+              <SpecIcon name={m.spec} size={24} />
               <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{m.label}</span>
               <span style={{ marginLeft: 'auto', fontWeight: 700, color: price > 0 ? 'var(--blue)' : 'var(--muted)' }}>
                 {price > 0 ? `${fmt(price)} so'm` : '—'}

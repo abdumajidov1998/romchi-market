@@ -103,18 +103,18 @@ export const CreateWasteBuyer: React.FC = () => {
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="Masalan: Alisher Atxodchi" />
       </Field>
 
-      <div style={{ fontWeight: 700, fontSize: 16, margin: '18px 0 10px' }}>💰 Olinadigan narxlar (1 kg uchun, so'm)</div>
+      <div style={{ fontWeight: 700, fontSize: 16, margin: '18px 0 10px' }}>Olinadigan narxlar (1 kg uchun, so'm)</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <Field label="🔥 Termo">
+        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/pvx.png" alt="" style={{ width: 20, height: 20 }} /> Termo</span>}>
           <Input value={priceTermo} onChange={e => setPriceTermo(e.target.value)} placeholder="4 000" inputMode="numeric" />
         </Field>
-        <Field label="⬜ PVX Oq">
+        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/termo.png" alt="" style={{ width: 20, height: 20 }} /> PVX Oq</span>}>
           <Input value={pricePvxOq} onChange={e => setPricePvxOq(e.target.value)} placeholder="10 000" inputMode="numeric" />
         </Field>
-        <Field label="🟫 PVX Rangli">
+        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/termo.png" alt="" style={{ width: 20, height: 20 }} /> PVX Rangli</span>}>
           <Input value={pricePvxRangli} onChange={e => setPricePvxRangli(e.target.value)} placeholder="5 000" inputMode="numeric" />
         </Field>
-        <Field label="🪟 Alyumin">
+        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/alyumin.png" alt="" style={{ width: 20, height: 20 }} /> Alyumin</span>}>
           <Input value={priceAlyumin} onChange={e => setPriceAlyumin(e.target.value)} placeholder="10 000" inputMode="numeric" />
         </Field>
       </div>

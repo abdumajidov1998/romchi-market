@@ -77,7 +77,7 @@ export const Card: React.FC<{ children: React.ReactNode; style?: React.CSSProper
   }}>{children}</div>
 );
 
-export const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+export const Field: React.FC<{ label: React.ReactNode; children: React.ReactNode }> = ({ label, children }) => (
   <div style={{ marginBottom: 12 }}>
     <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</label>
     {children}
