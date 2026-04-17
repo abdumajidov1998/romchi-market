@@ -3,6 +3,13 @@ import { Worker, Job } from './data';
 import { Link } from 'react-router-dom';
 import { SpecIcon } from './SpecIcon';
 
+export const TelegramIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="12" fill="#2AABEE" />
+    <path d="M5.43 11.87c2.94-1.28 4.9-2.12 5.89-2.53 2.8-1.17 3.39-1.37 3.77-1.38.08 0 .27.02.39.12.1.08.13.2.14.28.01.08.03.26.02.4-.15 1.56-.79 5.34-1.12 7.09-.14.74-.41 .99-.68 1.01-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.13-.05-.18-.06-.05-.15-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.37.74-.56z" fill="#fff" />
+  </svg>
+);
+
 export const Avatar: React.FC<{ initials: string; color?: 'blue' | 'amber' | 'green'; size?: number }> = ({ initials, color = 'blue', size = 48 }) => {
   const palette = {
     blue: { bg: 'linear-gradient(135deg, rgba(0,119,255,0.18), rgba(0,119,255,0.08))', fg: '#0077FF' },
@@ -140,7 +147,7 @@ export const WorkerCard: React.FC<{ worker: Worker; compact?: boolean }> = ({ wo
             )}
             {((worker as any).telegram || worker.phone) && (
               <a href={(worker as any).telegram ? `https://t.me/${String((worker as any).telegram).replace(/^@/, '')}` : `https://t.me/+${String(worker.phone).replace(/\D/g, '')}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>
-                <Btn style={{ padding: '8px 12px', fontSize: 13 }}>✈</Btn>
+                <Btn style={{ padding: '8px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}><TelegramIcon size={16} /></Btn>
               </a>
             )}
           </div>
