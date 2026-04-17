@@ -8,6 +8,7 @@ COPY tsconfig.json ./
 RUN npm run build
 
 FROM node:20-alpine
+RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
 RUN npm install --omit=dev
