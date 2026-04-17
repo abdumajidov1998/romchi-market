@@ -195,7 +195,7 @@ app.post('/api/jobs', auth, (req, res) => {
   }
 })();
 
-const buildDir = path.join(__dirname, '..', '..', 'build');
+const buildDir = path.join(__dirname, '..', 'build');
 app.use(express.static(buildDir));
 app.get(/^\/(?!api).*/, (req, res) => res.sendFile(path.join(buildDir, 'index.html')));
 
