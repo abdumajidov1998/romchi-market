@@ -85,7 +85,7 @@ export const UslugaProviders: React.FC = () => {
   const desktop = useIsDesktop();
   const nav = useNavigate();
   const [q, setQ] = React.useState('');
-  const [spec, setSpec] = React.useState<string | null>(null);
+  const [specs, setSpecs] = React.useState<string[]>([]);
   const [list, setList] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
@@ -118,15 +118,20 @@ export const UslugaProviders: React.FC = () => {
   React.useEffect(() => {
     let ok = true;
     setLoading(true);
-    api.uslugaProviders({ q: q || undefined, spec: spec || undefined })
+    api.uslugaProviders({ q: q || undefined })
       .then(d => { if (ok) { setList(d); setError(''); } })
       .catch(e => ok && setError(e.message))
       .finally(() => { if (ok) setLoading(false); });
     return () => { ok = false; };
-  }, [q, spec]);
+  }, [q]);
+
+  const toggleSpec = (s: string) => setSpecs(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
   const filtered = React.useMemo(() => {
     let result = list;
+    if (specs.length > 0) {
+      result = result.filter(p => (p.specs || []).some((s: string) => specs.includes(s)));
+    }
     if (nearbyOn && myCoords) {
       result = result
         .map(p => ({
@@ -138,7 +143,7 @@ export const UslugaProviders: React.FC = () => {
         .sort((a, b) => a.distanceKm - b.distanceKm);
     }
     return result;
-  }, [list, nearbyOn, myCoords, radiusKm]);
+  }, [list, specs, nearbyOn, myCoords, radiusKm]);
 
   const Header = (
     <>
@@ -158,8 +163,8 @@ export const UslugaProviders: React.FC = () => {
         <Chip on={nearbyOn} onClick={enableNearby}>
           {geoBusy ? '⏳ Aniqlanmoqda…' : '📍 Yaqin atrofdagilar'}
         </Chip>
-        <Chip on={specOpen} onClick={() => setSpecOpen(!specOpen)}>
-          {spec ? `🛠️ ${spec}` : '🛠️ Profil turi'}
+        <Chip on={specOpen || specs.length > 0} onClick={() => setSpecOpen(!specOpen)}>
+          {specs.length > 0 ? `🛠️ ${specs.join(', ')}` : '🛠️ Profil turi'}
         </Chip>
       </div>
       {nearbyOn && (
@@ -174,16 +179,18 @@ export const UslugaProviders: React.FC = () => {
       {specOpen && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
           {SPECS.map(s => {
-            const on = spec === s;
+            const on = specs.includes(s);
             return (
-              <button key={s} type="button" onClick={() => { setSpec(on ? null : s); setSpecOpen(false); }} style={{
+              <button key={s} type="button" onClick={() => toggleSpec(s)} style={{
                 padding: '8px 4px', borderRadius: 12, cursor: 'pointer',
                 background: on ? 'var(--blue-50)' : '#fff',
                 border: `1.5px solid ${on ? 'var(--blue)' : 'var(--line)'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                position: 'relative',
               }}>
                 <SpecIcon name={s} size={28} />
                 <div style={{ fontWeight: 700, fontSize: 11, color: on ? 'var(--blue)' : 'var(--ink)' }}>{s}</div>
+                {on && <div style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, borderRadius: 999, background: 'var(--blue)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700 }}>✓</div>}
               </button>
             );
           })}
@@ -192,7 +199,7 @@ export const UslugaProviders: React.FC = () => {
       <div style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 2px 12px' }}>
         <b style={{ color: 'var(--ink)' }}>{filtered.length}</b> ta uslugachi
         {nearbyOn && <> · {radiusKm} km radiusda</>}
-        {spec && <> · {spec}</>}
+        {specs.length > 0 && <> · {specs.join(', ')}</>}
       </div>
     </>
   );
