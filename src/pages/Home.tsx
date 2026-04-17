@@ -40,7 +40,7 @@ const SECTIONS = [
     color: '#FDF2F8',
     fg: '#EC4899',
     path: '/usluga',
-    active: false,
+    active: true,
   },
 ];
 

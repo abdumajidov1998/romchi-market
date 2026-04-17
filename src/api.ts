@@ -76,6 +76,15 @@ export const api = {
   saveWasteBuyer: (body: { name: string; city: string; district: string; about?: string; priceTermo?: number; pricePvxOq?: number; pricePvxRangli?: number; priceAlyumin?: number; lat?: number; lng?: number; telegram?: string }) =>
     req<any>('/waste-buyers', { method: 'POST', body: JSON.stringify(body) }),
 
+  uslugaProviders: (params?: { city?: string; spec?: string; q?: string }) => {
+    const clean = Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v));
+    const qs = new URLSearchParams(clean as any).toString();
+    return req<any[]>('/usluga' + (qs ? '?' + qs : ''));
+  },
+  uslugaProvider: (id: string | number) => req<any>(`/usluga/${id}`),
+  saveUsluga: (body: { name: string; city: string; district: string; about?: string; specs: string[]; priceTermo?: number; pricePvx?: number; priceAlyumin?: number; lat?: number; lng?: number; telegram?: string }) =>
+    req<any>('/usluga', { method: 'POST', body: JSON.stringify(body) }),
+
   postJob: (body: { title: string; company: string; type?: string; workType?: string; city: string; district: string; experience?: string; salaryFrom: number; salaryTo: number; specs: string[]; description?: string; badge?: string; lat?: number; lng?: number }) =>
     req<any>('/jobs', { method: 'POST', body: JSON.stringify(body) }),
 };

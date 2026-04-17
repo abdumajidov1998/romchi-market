@@ -350,6 +350,62 @@ app.post('/api/waste-buyers', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// === USLUGACHILAR ===
+const upRow = (r) => {
+  if (!r) return r;
+  if (typeof r.specs === 'string') r.specs = JSON.parse(r.specs);
+  if ('verified' in r) r.verified = !!r.verified;
+  if ('price_termo' in r) { r.priceTermo = r.price_termo; delete r.price_termo; }
+  if ('price_pvx' in r) { r.pricePvx = r.price_pvx; delete r.price_pvx; }
+  if ('price_alyumin' in r) { r.priceAlyumin = r.price_alyumin; delete r.price_alyumin; }
+  return r;
+};
+
+app.get('/api/usluga', async (req, res) => {
+  try {
+    const { city, spec, q: qr } = req.query;
+    let sql = 'SELECT usluga_providers.*, users.phone AS phone FROM usluga_providers LEFT JOIN users ON users.id = usluga_providers.user_id WHERE 1=1';
+    const params = [];
+    let n = 1;
+    if (city) { sql += ` AND city = $${n++}`; params.push(city); }
+    if (qr) { sql += ` AND (name ILIKE $${n})`; params.push(`%${qr}%`); n++; }
+    sql += ' ORDER BY verified DESC, usluga_providers.id DESC';
+    const r = await q(sql, params);
+    let list = r.rows.map(upRow);
+    if (spec) list = list.filter(u => u.specs.includes(spec));
+    res.json(list);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/usluga/:id', async (req, res) => {
+  try {
+    const r = await q('SELECT usluga_providers.*, users.phone AS phone FROM usluga_providers LEFT JOIN users ON users.id = usluga_providers.user_id WHERE usluga_providers.id = $1', [req.params.id]);
+    const u = r.rows[0] ? upRow(r.rows[0]) : null;
+    if (!u) return res.status(404).json({ error: 'Not found' });
+    res.json(u);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/usluga', auth, async (req, res) => {
+  try {
+    const { name, city, district, about, specs, priceTermo, pricePvx, priceAlyumin, lat, lng, telegram } = req.body || {};
+    if (!name || !city || !district || !specs || specs.length === 0) return res.status(400).json({ error: 'Missing fields' });
+    const tg = telegram ? String(telegram).replace(/^@/, '').trim() : null;
+    const existing = await q('SELECT id FROM usluga_providers WHERE user_id = $1', [req.user.id]);
+    if (existing.rows.length) {
+      await q(`UPDATE usluga_providers SET name=$1,city=$2,district=$3,about=$4,specs=$5,price_termo=$6,price_pvx=$7,price_alyumin=$8,lat=$9,lng=$10,telegram=$11 WHERE user_id=$12`,
+        [name, city, district, about || '', JSON.stringify(specs), priceTermo || 0, pricePvx || 0, priceAlyumin || 0, lat ?? null, lng ?? null, tg, req.user.id]);
+      const r = await q('SELECT * FROM usluga_providers WHERE user_id=$1', [req.user.id]);
+      return res.json(upRow(r.rows[0]));
+    }
+    const r = await q(`INSERT INTO usluga_providers (user_id,name,city,district,about,specs,price_termo,price_pvx,price_alyumin,lat,lng,telegram)
+                       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
+      [req.user.id, name, city, district, about || '', JSON.stringify(specs), priceTermo || 0, pricePvx || 0, priceAlyumin || 0, lat ?? null, lng ?? null, tg]);
+    const ur = await q('SELECT * FROM usluga_providers WHERE id=$1', [r.rows[0].id]);
+    res.json(upRow(ur.rows[0]));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 async function seed() {
   const r = await q('SELECT COUNT(*) as c FROM workers');
   if (parseInt(r.rows[0].c) === 0) {
@@ -399,6 +455,25 @@ async function seed() {
         [ur.rows[0].id, wb.name, wb.city, wb.district, wb.about, wb.price_termo, wb.price_pvx_oq, wb.price_pvx_rangli, wb.price_alyumin, wb.rating, wb.verified, wb.top]);
     }
     console.log('Seeded waste buyers.');
+  }
+
+  // Seed uslugachilar
+  const upr = await q('SELECT COUNT(*) as c FROM usluga_providers');
+  if (parseInt(upr.rows[0].c) === 0) {
+    const h = bcrypt.hashSync('demo1234', 10);
+    const sampleUP = [
+      { name: 'Grand Oyna Sex', city: 'Toshkent', district: 'Sergeli', specs: ['PVX', 'Termo'], about: 'PVX va Termo derazalar ishlab chiqarish. Boshqa sexlar uchun buyurtma qabul qilamiz.', price_termo: 85000, price_pvx: 120000, price_alyumin: 0, verified: 1 },
+      { name: 'AluPro Zavod', city: 'Toshkent', district: 'Chilonzor', specs: ['Alyumin'], about: 'Alyumin fasad va vitrazhlar. Metr kvadratga ishlaymiz.', price_termo: 0, price_pvx: 0, price_alyumin: 180000, verified: 1 },
+      { name: 'TermoPlast Sex', city: 'Toshkent', district: 'Yunusobod', specs: ['Termo', 'PVX', 'Alyumin'], about: 'Barcha turdagi deraza va eshiklar. Optom narxlarda.', price_termo: 75000, price_pvx: 110000, price_alyumin: 160000, verified: 0 },
+    ];
+    for (let i = 0; i < sampleUP.length; i++) {
+      const u = sampleUP[i];
+      const ur = await q('INSERT INTO users (phone, password_hash, role) VALUES ($1,$2,$3) RETURNING id', [`+99892000000${i + 1}`, h, 'usluga']);
+      await q(`INSERT INTO usluga_providers (user_id,name,city,district,about,specs,price_termo,price_pvx,price_alyumin,verified)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [ur.rows[0].id, u.name, u.city, u.district, u.about, JSON.stringify(u.specs), u.price_termo, u.price_pvx, u.price_alyumin, u.verified]);
+    }
+    console.log('Seeded usluga providers.');
   }
 }
 
