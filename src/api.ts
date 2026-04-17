@@ -37,6 +37,11 @@ async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
+  sendCode: (phone: string) =>
+    req<{ ok: boolean; message: string }>('/auth/send-code', { method: 'POST', body: JSON.stringify({ phone }) }),
+  verifyCode: (body: { phone: string; code: string; password?: string; role?: string }) =>
+    req<{ token: string; user: User; isNew: boolean }>('/auth/verify-code', { method: 'POST', body: JSON.stringify(body) }),
+
   register: (body: { phone: string; password: string; role: 'worker' | 'employer'; name?: string; city?: string; district?: string; specs?: string[]; experience?: string; about?: string; lat?: number; lng?: number; salaryFrom?: number; salaryTo?: number; telegram?: string }) =>
     req<{ token: string; user: User }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
   login: (phone: string, password: string) =>

@@ -37,6 +37,97 @@ const auth = (req, res, next) => {
 
 app.get('/api/health', (_, res) => res.json({ ok: true, time: Date.now() }));
 
+// === SMS TASDIQLASH ===
+const ESKIZ_EMAIL = process.env.ESKIZ_EMAIL || '';
+const ESKIZ_PASSWORD = process.env.ESKIZ_PASSWORD || '';
+const smsCodes = new Map(); // phone -> { code, expires, attempts }
+
+async function getEskizToken() {
+  if (!ESKIZ_EMAIL || !ESKIZ_PASSWORD) return null;
+  try {
+    const res = await fetch('https://notify.eskiz.uz/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: ESKIZ_EMAIL, password: ESKIZ_PASSWORD }),
+    });
+    const data = await res.json();
+    return data.data?.token || null;
+  } catch { return null; }
+}
+
+async function sendSmsViaEskiz(phone, code) {
+  const token = await getEskizToken();
+  if (!token) {
+    console.log(`[DEV] SMS code for ${phone}: ${code}`);
+    return true; // dev mode — kod konsolga chiqadi
+  }
+  const cleanPhone = phone.replace(/\D/g, '');
+  const res = await fetch('https://notify.eskiz.uz/api/message/sms/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      mobile_phone: cleanPhone,
+      message: `Romchi Market tasdiqlash kodi: ${code}`,
+      from: '4546',
+    }),
+  });
+  return res.ok;
+}
+
+app.post('/api/auth/send-code', async (req, res) => {
+  try {
+    const { phone } = req.body || {};
+    if (!phone) return res.status(400).json({ error: 'Telefon raqam kerak' });
+    const cleanPhone = phone.replace(/\s/g, '');
+
+    // 60 soniyada 1 marta cheklash
+    const existing = smsCodes.get(cleanPhone);
+    if (existing && existing.expires > Date.now() && (existing.expires - Date.now()) > 4 * 60 * 1000) {
+      return res.status(429).json({ error: 'Kod allaqachon yuborildi. 60 soniya kutib qayta urinib ko\'ring.' });
+    }
+
+    const code = String(Math.floor(1000 + Math.random() * 9000)); // 4 raqamli
+    smsCodes.set(cleanPhone, { code, expires: Date.now() + 5 * 60 * 1000, attempts: 0 });
+
+    await sendSmsViaEskiz(cleanPhone, code);
+    res.json({ ok: true, message: 'Kod yuborildi' });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/auth/verify-code', async (req, res) => {
+  try {
+    const { phone, code, password, role } = req.body || {};
+    if (!phone || !code) return res.status(400).json({ error: 'Telefon va kod kerak' });
+    const cleanPhone = phone.replace(/\s/g, '');
+
+    const entry = smsCodes.get(cleanPhone);
+    if (!entry) return res.status(400).json({ error: 'Avval kod yuboring' });
+    if (entry.expires < Date.now()) { smsCodes.delete(cleanPhone); return res.status(400).json({ error: 'Kod muddati tugagan. Qayta yuboring.' }); }
+    if (entry.attempts >= 5) { smsCodes.delete(cleanPhone); return res.status(400).json({ error: 'Juda ko\'p urinish. Qayta kod yuboring.' }); }
+
+    entry.attempts++;
+    if (entry.code !== code) return res.status(400).json({ error: 'Kod noto\'g\'ri' });
+
+    smsCodes.delete(cleanPhone);
+
+    // Foydalanuvchi mavjudmi?
+    const existingUser = await q('SELECT * FROM users WHERE phone = $1', [cleanPhone]);
+    if (existingUser.rows.length) {
+      const user = existingUser.rows[0];
+      const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+      return res.json({ token, user: { id: user.id, phone: user.phone, role: user.role }, isNew: false });
+    }
+
+    // Yangi foydalanuvchi
+    if (!password || !role) return res.status(400).json({ error: 'Parol va rol kerak (yangi foydalanuvchi)' });
+    const hash = bcrypt.hashSync(password, 10);
+    const userRes = await q('INSERT INTO users (phone, password_hash, role) VALUES ($1,$2,$3) RETURNING id', [cleanPhone, hash, role]);
+    const userId = userRes.rows[0].id;
+    const token = jwt.sign({ id: userId, role }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: userId, phone: cleanPhone, role }, isNew: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { phone, password, role, name, city, district, specs, experience, about, lat, lng, telegram, salaryFrom, salaryTo } = req.body || {};
