@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { allSpecs } from '../data';
 import { Chip, WorkerCard, EmptyState, Btn, Badge, TelegramIcon } from '../ui';
 import { useIsDesktop } from '../Layout';
@@ -29,6 +30,7 @@ const haversine = (a: { lat: number; lng: number }, b: { lat: number; lng: numbe
 
 export const Workers: React.FC = () => {
   const desktop = useIsDesktop();
+  const nav = useNavigate();
   const [q, setQ] = React.useState('');
   const [spec, setSpec] = React.useState<string | null>(null);
   const [topOnly, setTopOnly] = React.useState(false);
@@ -95,8 +97,9 @@ export const Workers: React.FC = () => {
   const Header = (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <div>
-          <div style={{ fontSize: 12, color: 'var(--muted)' }}>Ishchi qidirish</div>
+        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
+        <div style={{ textAlign: 'center', flex: 1 }}>
+          <div style={{ fontSize: 12, color: 'var(--muted)' }}>🔧 Romchi Ish</div>
           <div style={{ fontWeight: 800, fontSize: desktop ? 26 : 20 }}>Ishchilar</div>
         </div>
         {!desktop && <div style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', display: 'grid', placeItems: 'center' }}>🔔</div>}

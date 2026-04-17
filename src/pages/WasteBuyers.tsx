@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Btn, Badge, EmptyState, TelegramIcon } from '../ui';
 import { useIsDesktop } from '../Layout';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { cities, regions } from '../data';
 
 const MATERIALS = [
   { key: 'priceTermo', label: 'Termo', icon: '🔥' },
@@ -64,6 +64,7 @@ const BuyerCard: React.FC<{ b: any }> = ({ b }) => (
 
 export const WasteBuyers: React.FC = () => {
   const desktop = useIsDesktop();
+  const nav = useNavigate();
   const [q, setQ] = React.useState('');
   const [list, setList] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -82,10 +83,12 @@ export const WasteBuyers: React.FC = () => {
   const Header = (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <div>
+        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
+        <div style={{ textAlign: 'center', flex: 1 }}>
           <div style={{ fontSize: 12, color: 'var(--muted)' }}>♻️ Atxod xizmati</div>
           <div style={{ fontWeight: 800, fontSize: desktop ? 26 : 20 }}>Atxod oluvchilar</div>
         </div>
+        <button onClick={() => nav('/atxod/create')} style={{ width: 38, height: 38, borderRadius: 12, background: 'var(--blue)', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer', fontWeight: 700 }}>+</button>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: '12px 14px', marginBottom: 12 }}>
         <span style={{ color: 'var(--muted)' }}>🔍</span>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar, Chip, JobCard, EmptyState } from '../ui';
 import { useIsDesktop } from '../Layout';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { allSpecs } from '../data';
 import { SpecIcon } from '../SpecIcon';
@@ -9,6 +10,7 @@ const fmt = (v: string) => v.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g,
 
 export const Jobs: React.FC = () => {
   const desktop = useIsDesktop();
+  const nav = useNavigate();
   const [tab, setTab] = React.useState<'Siz uchun' | 'Yaqinda' | 'Yuqori maosh' | 'Yangi'>('Siz uchun');
   const [q, setQ] = React.useState('');
   const [pickedSpecs, setPickedSpecs] = React.useState<string[]>([]);
@@ -41,8 +43,9 @@ export const Jobs: React.FC = () => {
   const Header = (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <div>
-          <div style={{ fontSize: 12, color: 'var(--muted)' }}>Salom 👋</div>
+        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
+        <div style={{ textAlign: 'center', flex: 1 }}>
+          <div style={{ fontSize: 12, color: 'var(--muted)' }}>🔧 Romchi Ish</div>
           <div style={{ fontWeight: 800, fontSize: desktop ? 26 : 20 }}>Keyingi ishingizni toping</div>
         </div>
         {!desktop && <Avatar initials="AK" size={38} />}

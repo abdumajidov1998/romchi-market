@@ -12,6 +12,7 @@ import { PostJob } from './pages/PostJob';
 import { Chat, Profile } from './pages/Stub';
 import { WasteBuyers } from './pages/WasteBuyers';
 import { WasteBuyerProfile } from './pages/WasteBuyerProfile';
+import { CreateWasteBuyer } from './pages/CreateWasteBuyer';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/workers/:id" element={<WorkerProfile />} />
           <Route path="/post" element={<PostJob />} />
           <Route path="/atxod" element={<WasteBuyers />} />
+          <Route path="/atxod/create" element={<CreateWasteBuyer />} />
           <Route path="/atxod/:id" element={<WasteBuyerProfile />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/profile" element={<Profile />} />

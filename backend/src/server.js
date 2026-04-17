@@ -311,7 +311,7 @@ async function seed() {
   }
 }
 
-const buildDir = path.join(__dirname, '..', 'build');
+const buildDir = process.env.DATABASE_URL ? path.join(__dirname, '..', 'build') : path.join(__dirname, '..', '..', 'build');
 app.use(express.static(buildDir));
 app.get(/^\/(?!api).*/, (req, res) => res.sendFile(path.join(buildDir, 'index.html')));
 
