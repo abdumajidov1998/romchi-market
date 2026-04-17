@@ -1,0 +1,67 @@
+const BASE = '/api';
+const TOKEN_KEY = 'romchi_token';
+const USER_KEY = 'romchi_user';
+
+export type User = { id: number; phone: string; role: 'worker' | 'employer' };
+
+export const auth = {
+  token: () => localStorage.getItem(TOKEN_KEY),
+  user: (): User | null => {
+    const s = localStorage.getItem(USER_KEY);
+    return s ? JSON.parse(s) : null;
+  },
+  set: (token: string, user: User) => {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  },
+  clear: () => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  },
+};
+
+async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
+  const t = auth.token();
+  const res = await fetch(BASE + path, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(t ? { Authorization: `Bearer ${t}` } : {}),
+      ...(opts.headers || {}),
+    },
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+  return data as T;
+}
+
+export const api = {
+  register: (body: { phone: string; password: string; role: 'worker' | 'employer'; name?: string; city?: string; district?: string; specs?: string[]; experience?: string; about?: string; lat?: number; lng?: number; salaryFrom?: number; salaryTo?: number; telegram?: string }) =>
+    req<{ token: string; user: User }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+  login: (phone: string, password: string) =>
+    req<{ token: string; user: User }>('/auth/login', { method: 'POST', body: JSON.stringify({ phone, password }) }),
+  me: () => req<{ user: User; profile: any }>('/me'),
+
+  workers: (params?: { city?: string; spec?: string; q?: string }) => {
+    const clean = Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v));
+    const qs = new URLSearchParams(clean as any).toString();
+    return req<any[]>('/workers' + (qs ? '?' + qs : ''));
+  },
+  worker: (id: string | number) => req<any>(`/workers/${id}`),
+  saveWorker: (body: { name: string; city: string; district: string; specs: string[]; experience: string; about?: string; lat?: number; lng?: number; salaryFrom?: number; salaryTo?: number; telegram?: string }) =>
+    req<any>('/workers', { method: 'POST', body: JSON.stringify(body) }),
+
+  jobs: (params?: { city?: string; spec?: string; q?: string }) => {
+    const clean = Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v));
+    const qs = new URLSearchParams(clean as any).toString();
+    return req<any[]>('/jobs' + (qs ? '?' + qs : ''));
+  },
+  job: (id: string | number) => req<any>(`/jobs/${id}`),
+  updateJob: (id: string | number, body: any) =>
+    req<any>(`/jobs/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteJob: (id: string | number) =>
+    req<{ ok: boolean }>(`/jobs/${id}`, { method: 'DELETE' }),
+  postJob: (body: { title: string; company: string; type?: string; workType?: string; city: string; district: string; experience?: string; salaryFrom: number; salaryTo: number; specs: string[]; description?: string; badge?: string; lat?: number; lng?: number }) =>
+    req<any>('/jobs', { method: 'POST', body: JSON.stringify(body) }),
+};
