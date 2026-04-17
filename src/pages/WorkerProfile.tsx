@@ -114,7 +114,7 @@ export const WorkerProfile: React.FC = () => {
           <Btn full>📞 Qo‘ng‘iroq</Btn>
         </a>
         <a href={w.telegram ? `https://t.me/${String(w.telegram).replace(/^@/, '')}` : w.phone ? `https://t.me/+${String(w.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', opacity: (w.telegram || w.phone) ? 1 : .5, pointerEvents: (w.telegram || w.phone) ? 'auto' : 'none' }}>
-          <Btn variant="ghost" full style={{ color: 'var(--blue)', borderColor: 'var(--blue-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={18} /> Telegram</Btn>
+          <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>
     </div>

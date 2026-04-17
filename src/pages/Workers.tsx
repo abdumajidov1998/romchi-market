@@ -209,7 +209,7 @@ export const Workers: React.FC = () => {
                   <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%' }}>📞 Qo‘ng‘iroq</Btn>
                 </a>
                 <a href={w.telegram ? `https://t.me/${String(w.telegram).replace(/^@/, '')}` : w.phone ? `https://t.me/+${String(w.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', opacity: (w.telegram || w.phone) ? 1 : .5, pointerEvents: (w.telegram || w.phone) ? 'auto' : 'none' }}>
-                  <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={14} /> Telegram</Btn>
+                  <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={20} /> Telegram</Btn>
                 </a>
                 <Btn style={{ padding: 9, fontSize: 13 }}>Taklif</Btn>
               </div>

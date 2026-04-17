@@ -147,7 +147,7 @@ export const WorkerCard: React.FC<{ worker: Worker; compact?: boolean }> = ({ wo
             )}
             {((worker as any).telegram || worker.phone) && (
               <a href={(worker as any).telegram ? `https://t.me/${String((worker as any).telegram).replace(/^@/, '')}` : `https://t.me/+${String(worker.phone).replace(/\D/g, '')}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>
-                <Btn style={{ padding: '8px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}><TelegramIcon size={16} /></Btn>
+                <Btn variant="soft" style={{ padding: '8px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}><TelegramIcon size={20} /></Btn>
               </a>
             )}
           </div>
