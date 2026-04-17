@@ -4,7 +4,19 @@ import { Card, Btn, Badge, EmptyState, TelegramIcon } from '../ui';
 import { useIsDesktop } from '../Layout';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { Chip } from '../ui';
 import { SpecIcon } from '../SpecIcon';
+
+const RADII = [5, 10, 15, 25, 50];
+
+const haversine = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+  const R = 6371;
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+};
 
 const MATERIALS = [
   { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
@@ -69,6 +81,30 @@ export const WasteBuyers: React.FC = () => {
   const [list, setList] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
+  const [nearbyOn, setNearbyOn] = React.useState(false);
+  const [radiusKm, setRadiusKm] = React.useState<number>(15);
+  const [myCoords, setMyCoords] = React.useState<{ lat: number; lng: number } | null>(null);
+  const [geoBusy, setGeoBusy] = React.useState(false);
+  const [geoError, setGeoError] = React.useState('');
+
+  const enableNearby = () => {
+    if (nearbyOn) { setNearbyOn(false); return; }
+    setGeoError('');
+    if (!navigator.geolocation) { setGeoError('Brauzeringiz lokatsiyani qo\'llab-quvvatlamaydi'); return; }
+    setGeoBusy(true);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setMyCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setNearbyOn(true);
+        setGeoBusy(false);
+      },
+      err => {
+        setGeoError(err.code === 1 ? 'Lokatsiyaga ruxsat bermadingiz' : 'Lokatsiyani aniqlab bo\'lmadi');
+        setGeoBusy(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000 },
+    );
+  };
 
   React.useEffect(() => {
     let ok = true;
@@ -79,6 +115,19 @@ export const WasteBuyers: React.FC = () => {
       .finally(() => { if (ok) setLoading(false); });
     return () => { ok = false; };
   }, [q]);
+
+  const filtered = React.useMemo(() => {
+    if (!nearbyOn || !myCoords) return list;
+    return list
+      .map(b => {
+        if (typeof b.lat === 'number' && typeof b.lng === 'number') {
+          return { ...b, distanceKm: haversine(myCoords, { lat: b.lat, lng: b.lng }) };
+        }
+        return { ...b, distanceKm: Infinity };
+      })
+      .filter(b => b.distanceKm <= radiusKm)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }, [list, nearbyOn, myCoords, radiusKm]);
 
   const Header = (
     <>
@@ -94,21 +143,38 @@ export const WasteBuyers: React.FC = () => {
         <span style={{ color: 'var(--muted)' }}>🔍</span>
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Atxod oluvchi qidirish…" style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, background: 'transparent' }} />
       </div>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, alignItems: 'center' }}>
+        <Chip on={nearbyOn} onClick={enableNearby}>
+          {geoBusy ? '⏳ Aniqlanmoqda…' : '📍 Yaqin atrofdagilar'}
+        </Chip>
+      </div>
+      {nearbyOn && (
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: 'var(--muted)', flexShrink: 0 }}>Radius:</span>
+          {RADII.map(r => (
+            <Chip key={r} on={radiusKm === r} onClick={() => setRadiusKm(r)}>{r} km</Chip>
+          ))}
+        </div>
+      )}
+      {geoError && <div style={{ marginBottom: 8, padding: 10, background: '#FEE2E2', color: '#DC2626', borderRadius: 12, fontSize: 12, fontWeight: 500 }}>⚠️ {geoError}</div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', margin: '6px 2px 12px' }}>
-        <div style={{ fontSize: 13, color: 'var(--muted)' }}><b style={{ color: 'var(--ink)' }}>{list.length}</b> ta atxod oluvchi</div>
+        <div style={{ fontSize: 13, color: 'var(--muted)' }}>
+          <b style={{ color: 'var(--ink)' }}>{filtered.length}</b> ta atxod oluvchi
+          {nearbyOn && <> · {radiusKm} km radiusda</>}
+        </div>
       </div>
     </>
   );
 
   if (loading) return <>{Header}<EmptyState icon="⏳" title="Yuklanmoqda…" sub="" /></>;
   if (error) return <>{Header}<EmptyState icon="⚠️" title="Xatolik" sub={error} /></>;
-  if (list.length === 0) return <>{Header}<EmptyState icon="♻️" title="Atxod oluvchilar topilmadi" sub="Birinchi bo'lib ro'yxatdan o'ting!" /></>;
+  if (filtered.length === 0) return <>{Header}<EmptyState icon="♻️" title="Atxod oluvchilar topilmadi" sub={nearbyOn ? `${radiusKm} km radiusda topilmadi. Radiusni kattalashtiring.` : 'Birinchi bo\'lib ro\'yxatdan o\'ting!'} /></>;
 
   return (
     <div>
       {Header}
       <div style={{ display: desktop ? 'grid' : 'flex', flexDirection: 'column', gap: 12, gridTemplateColumns: desktop ? 'repeat(auto-fill, minmax(380px, 1fr))' : undefined }}>
-        {list.map(b => <BuyerCard key={b.id} b={b} />)}
+        {filtered.map(b => <BuyerCard key={b.id} b={b} />)}
       </div>
     </div>
   );
