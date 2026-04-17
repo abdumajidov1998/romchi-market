@@ -463,16 +463,16 @@ async function seed() {
   if (parseInt(upr.rows[0].c) === 0) {
     const h = bcrypt.hashSync('demo1234', 10);
     const sampleUP = [
-      { name: 'Grand Oyna Sex', city: 'Toshkent', district: 'Sergeli', specs: ['PVX', 'Termo'], about: 'PVX va Termo derazalar ishlab chiqarish. Boshqa sexlar uchun buyurtma qabul qilamiz.', price_termo: 85000, price_pvx: 120000, price_alyumin: 0, verified: 1 },
-      { name: 'AluPro Zavod', city: 'Toshkent', district: 'Chilonzor', specs: ['Alyumin'], about: 'Alyumin fasad va vitrazhlar. Metr kvadratga ishlaymiz.', price_termo: 0, price_pvx: 0, price_alyumin: 180000, verified: 1 },
-      { name: 'TermoPlast Sex', city: 'Toshkent', district: 'Yunusobod', specs: ['Termo', 'PVX', 'Alyumin'], about: 'Barcha turdagi deraza va eshiklar. Optom narxlarda.', price_termo: 75000, price_pvx: 110000, price_alyumin: 160000, verified: 0 },
+      { name: 'Grand Oyna Sex', city: 'Toshkent', district: 'Sergeli', specs: ['PVX', 'Termo', 'Surma'], about: 'PVX, Termo va Surma eshiklar ishlab chiqarish. Boshqa sexlar uchun buyurtma qabul qilamiz.', price_termo: 85000, price_pvx: 120000, price_alyumin: 0, price_surma: 150000, verified: 1 },
+      { name: 'AluPro Zavod', city: 'Toshkent', district: 'Chilonzor', specs: ['Alyumin', 'Surma'], about: 'Alyumin fasad, vitrazhlar va surma eshiklar. Metr kvadratga ishlaymiz.', price_termo: 0, price_pvx: 0, price_alyumin: 180000, price_surma: 200000, verified: 1 },
+      { name: 'TermoPlast Sex', city: 'Toshkent', district: 'Yunusobod', specs: ['Termo', 'PVX', 'Alyumin', 'Surma'], about: 'Barcha turdagi deraza va eshiklar. Optom narxlarda.', price_termo: 75000, price_pvx: 110000, price_alyumin: 160000, price_surma: 140000, verified: 0 },
     ];
     for (let i = 0; i < sampleUP.length; i++) {
       const u = sampleUP[i];
       const ur = await q('INSERT INTO users (phone, password_hash, role) VALUES ($1,$2,$3) RETURNING id', [`+99892000000${i + 1}`, h, 'usluga']);
-      await q(`INSERT INTO usluga_providers (user_id,name,city,district,about,specs,price_termo,price_pvx,price_alyumin,verified)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-        [ur.rows[0].id, u.name, u.city, u.district, u.about, JSON.stringify(u.specs), u.price_termo, u.price_pvx, u.price_alyumin, u.verified]);
+      await q(`INSERT INTO usluga_providers (user_id,name,city,district,about,specs,price_termo,price_pvx,price_alyumin,price_surma,verified)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [ur.rows[0].id, u.name, u.city, u.district, u.about, JSON.stringify(u.specs), u.price_termo, u.price_pvx, u.price_alyumin, u.price_surma, u.verified]);
     }
     console.log('Seeded usluga providers.');
   }

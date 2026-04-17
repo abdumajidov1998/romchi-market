@@ -104,7 +104,7 @@ export const UslugaProviders: React.FC = () => {
         <span style={{ color: 'var(--muted)' }}>🔍</span>
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Sex yoki ustaxona qidirish…" style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, background: 'transparent' }} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
         {SPECS.map(s => {
           const on = spec === s;
           return (

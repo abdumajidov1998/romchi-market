@@ -74,7 +74,7 @@ export const CreateUsluga: React.FC = () => {
       </Field>
 
       <div style={{ fontWeight: 700, fontSize: 16, margin: '18px 0 10px' }}>Qanday yo'nalishda ishlaysiz?</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
         {SPECS.map(s => {
           const on = specs.includes(s);
           return (
