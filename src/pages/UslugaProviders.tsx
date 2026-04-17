@@ -6,6 +6,16 @@ import { api } from '../api';
 import { SpecIcon } from '../SpecIcon';
 
 const SPECS = ['Termo', 'PVX', 'Alyumin', 'Surma'];
+const RADII = [5, 10, 15, 25, 50];
+
+const haversine = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+  const R = 6371;
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+};
 const PRICES = [
   { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
   { key: 'pricePvx', label: 'PVX', spec: 'PVX' },
@@ -79,6 +89,31 @@ export const UslugaProviders: React.FC = () => {
   const [list, setList] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
+  const [nearbyOn, setNearbyOn] = React.useState(false);
+  const [radiusKm, setRadiusKm] = React.useState<number>(15);
+  const [myCoords, setMyCoords] = React.useState<{ lat: number; lng: number } | null>(null);
+  const [geoBusy, setGeoBusy] = React.useState(false);
+  const [geoError, setGeoError] = React.useState('');
+  const [specOpen, setSpecOpen] = React.useState(false);
+
+  const enableNearby = () => {
+    if (nearbyOn) { setNearbyOn(false); return; }
+    setGeoError('');
+    if (!navigator.geolocation) { setGeoError('Brauzeringiz lokatsiyani qo\'llab-quvvatlamaydi'); return; }
+    setGeoBusy(true);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setMyCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setNearbyOn(true);
+        setGeoBusy(false);
+      },
+      err => {
+        setGeoError(err.code === 1 ? 'Lokatsiyaga ruxsat bermadingiz' : 'Lokatsiyani aniqlab bo\'lmadi');
+        setGeoBusy(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000 },
+    );
+  };
 
   React.useEffect(() => {
     let ok = true;
@@ -89,6 +124,21 @@ export const UslugaProviders: React.FC = () => {
       .finally(() => { if (ok) setLoading(false); });
     return () => { ok = false; };
   }, [q, spec]);
+
+  const filtered = React.useMemo(() => {
+    let result = list;
+    if (nearbyOn && myCoords) {
+      result = result
+        .map(p => ({
+          ...p,
+          distanceKm: (typeof p.lat === 'number' && typeof p.lng === 'number')
+            ? haversine(myCoords, { lat: p.lat, lng: p.lng }) : Infinity,
+        }))
+        .filter(p => p.distanceKm <= radiusKm)
+        .sort((a, b) => a.distanceKm - b.distanceKm);
+    }
+    return result;
+  }, [list, nearbyOn, myCoords, radiusKm]);
 
   const Header = (
     <>
@@ -104,37 +154,58 @@ export const UslugaProviders: React.FC = () => {
         <span style={{ color: 'var(--muted)' }}>🔍</span>
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Sex yoki ustaxona qidirish…" style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, background: 'transparent' }} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
-        {SPECS.map(s => {
-          const on = spec === s;
-          return (
-            <button key={s} type="button" onClick={() => setSpec(on ? null : s)} style={{
-              padding: '8px 4px', borderRadius: 12, cursor: 'pointer',
-              background: on ? 'var(--blue-50)' : '#fff',
-              border: `1.5px solid ${on ? 'var(--blue)' : 'var(--line)'}`,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-            }}>
-              <SpecIcon name={s} size={28} />
-              <div style={{ fontWeight: 700, fontSize: 11, color: on ? 'var(--blue)' : 'var(--ink)' }}>{s}</div>
-            </button>
-          );
-        })}
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, alignItems: 'center' }}>
+        <Chip on={nearbyOn} onClick={enableNearby}>
+          {geoBusy ? '⏳ Aniqlanmoqda…' : '📍 Yaqin atrofdagilar'}
+        </Chip>
+        <Chip on={specOpen} onClick={() => setSpecOpen(!specOpen)}>
+          {spec ? `🛠️ ${spec}` : '🛠️ Profil turi'}
+        </Chip>
       </div>
+      {nearbyOn && (
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: 'var(--muted)', flexShrink: 0 }}>Radius:</span>
+          {RADII.map(r => (
+            <Chip key={r} on={radiusKm === r} onClick={() => setRadiusKm(r)}>{r} km</Chip>
+          ))}
+        </div>
+      )}
+      {geoError && <div style={{ marginBottom: 8, padding: 10, background: '#FEE2E2', color: '#DC2626', borderRadius: 12, fontSize: 12, fontWeight: 500 }}>⚠️ {geoError}</div>}
+      {specOpen && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+          {SPECS.map(s => {
+            const on = spec === s;
+            return (
+              <button key={s} type="button" onClick={() => { setSpec(on ? null : s); setSpecOpen(false); }} style={{
+                padding: '8px 4px', borderRadius: 12, cursor: 'pointer',
+                background: on ? 'var(--blue-50)' : '#fff',
+                border: `1.5px solid ${on ? 'var(--blue)' : 'var(--line)'}`,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+              }}>
+                <SpecIcon name={s} size={28} />
+                <div style={{ fontWeight: 700, fontSize: 11, color: on ? 'var(--blue)' : 'var(--ink)' }}>{s}</div>
+              </button>
+            );
+          })}
+        </div>
+      )}
       <div style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 2px 12px' }}>
-        <b style={{ color: 'var(--ink)' }}>{list.length}</b> ta uslugachi
+        <b style={{ color: 'var(--ink)' }}>{filtered.length}</b> ta uslugachi
+        {nearbyOn && <> · {radiusKm} km radiusda</>}
+        {spec && <> · {spec}</>}
       </div>
     </>
   );
 
   if (loading) return <>{Header}<EmptyState icon="⏳" title="Yuklanmoqda…" sub="" /></>;
   if (error) return <>{Header}<EmptyState icon="⚠️" title="Xatolik" sub={error} /></>;
-  if (list.length === 0) return <>{Header}<EmptyState icon="🛠️" title="Uslugachilar topilmadi" sub="Birinchi bo'lib ro'yxatdan o'ting!" /></>;
+  if (filtered.length === 0) return <>{Header}<EmptyState icon="🛠️" title="Uslugachilar topilmadi" sub={nearbyOn ? `${radiusKm} km radiusda topilmadi` : 'Birinchi bo\'lib ro\'yxatdan o\'ting!'} /></>;
 
   return (
     <div>
       {Header}
       <div style={{ display: desktop ? 'grid' : 'flex', flexDirection: 'column', gap: 12, gridTemplateColumns: desktop ? 'repeat(auto-fill, minmax(380px, 1fr))' : undefined }}>
-        {list.map(p => <ProviderCard key={p.id} p={p} />)}
+        {filtered.map(p => <ProviderCard key={p.id} p={p} />)}
       </div>
     </div>
   );
