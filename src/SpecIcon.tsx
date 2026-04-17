@@ -1,19 +1,20 @@
 import React from 'react';
 
-const SRC: Record<string, string> = {
-  Termo: '/images/pvx.png',
-  PVX: '/images/termo.png',
-  Alyumin: '/images/alyumin.png',
+const ICONS: Record<string, { src: string; filter?: string }> = {
+  Termo: { src: '/images/pvx.png' },
+  PVX: { src: '/images/termo.png' },
+  'PVX Oq': { src: '/images/termo.png', filter: 'invert(1) brightness(1.8) contrast(0.6) sepia(0) saturate(0)' },
+  Alyumin: { src: '/images/alyumin.png' },
 };
 
 export const SpecIcon: React.FC<{ name: string; size?: number }> = ({ name, size = 64 }) => {
-  const src = SRC[name];
-  if (!src) return null;
+  const icon = ICONS[name];
+  if (!icon) return null;
   return (
     <img
-      src={src}
+      src={icon.src}
       alt={name}
-      style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
+      style={{ width: size, height: size, objectFit: 'contain', display: 'block', filter: icon.filter || 'none' }}
     />
   );
 };

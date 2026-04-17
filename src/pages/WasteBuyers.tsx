@@ -8,7 +8,7 @@ import { SpecIcon } from '../SpecIcon';
 
 const MATERIALS = [
   { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
-  { key: 'pricePvxOq', label: 'PVX Oq', spec: 'PVX' },
+  { key: 'pricePvxOq', label: 'PVX Oq', spec: 'PVX Oq' },
   { key: 'pricePvxRangli', label: 'PVX Rangli', spec: 'PVX' },
   { key: 'priceAlyumin', label: 'Alyumin', spec: 'Alyumin' },
 ];

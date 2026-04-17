@@ -108,7 +108,7 @@ export const CreateWasteBuyer: React.FC = () => {
         <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/pvx.png" alt="" style={{ width: 20, height: 20 }} /> Termo</span>}>
           <Input value={priceTermo} onChange={e => setPriceTermo(e.target.value)} placeholder="4 000" inputMode="numeric" />
         </Field>
-        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/termo.png" alt="" style={{ width: 20, height: 20 }} /> PVX Oq</span>}>
+        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/termo.png" alt="" style={{ width: 20, height: 20, filter: 'invert(1) brightness(1.8) contrast(0.6) saturate(0)' }} /> PVX Oq</span>}>
           <Input value={pricePvxOq} onChange={e => setPricePvxOq(e.target.value)} placeholder="10 000" inputMode="numeric" />
         </Field>
         <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/termo.png" alt="" style={{ width: 20, height: 20 }} /> PVX Rangli</span>}>
