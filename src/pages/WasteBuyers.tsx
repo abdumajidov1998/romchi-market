@@ -27,8 +27,7 @@ const BuyerCard: React.FC<{ b: any }> = ({ b }) => (
           <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>📍 {b.city} · {b.district}</div>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontWeight: 700, fontSize: 13 }}>{(b.rating || 0).toFixed(1)} <span style={{ color: 'var(--amber)' }}>★</span></div>
-          {b.top && <Badge tone="amber">Top</Badge>}
+          {b.verified && <Badge tone="green">Tasdiqlangan</Badge>}
         </div>
       </div>
 

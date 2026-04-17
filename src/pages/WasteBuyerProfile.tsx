@@ -51,7 +51,6 @@ export const WasteBuyerProfile: React.FC = () => {
         </div>
         <div style={{ color: 'var(--muted)', fontSize: 14, marginTop: 2 }}>📍 {b.city} · {b.district}</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 16 }}>
-          <div><b>{(b.rating || 0).toFixed(1)} <span style={{ color: 'var(--amber)' }}>★</span></b><div style={{ fontSize: 11, color: 'var(--muted)' }}>Reyting</div></div>
           <div><b>{b.verified ? '✓ Tasdiqlangan' : 'Yangi'}</b><div style={{ fontSize: 11, color: 'var(--muted)' }}>Holat</div></div>
         </div>
       </Card>
