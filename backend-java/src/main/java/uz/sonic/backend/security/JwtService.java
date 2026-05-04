@@ -29,10 +29,10 @@ public class JwtService {
         this.ttlMillis = props.jwt().ttlDays() * 24L * 3600L * 1000L;
     }
 
-    public String sign(long userId, String role) {
+    public String sign(long userId, String role, String phone) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
-                .claims(Map.of("id", userId, "role", role))
+                .claims(Map.of("id", userId, "role", role, "phone", phone == null ? "" : phone))
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + ttlMillis))
                 .signWith(key)

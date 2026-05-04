@@ -104,7 +104,7 @@ public class AuthController {
         return users.findByPhone(phone)
                 .map(u -> {
                     sms.delete(phone);
-                    String token = jwt.sign(u.getId(), u.getRole());
+                    String token = jwt.sign(u.getId(), u.getRole(), u.getPhone());
                     return new VerifyResponse(token, new UserDto(u.getId(), u.getPhone(), u.getRole()), false);
                 })
                 .orElseGet(() -> {
@@ -117,7 +117,7 @@ public class AuthController {
                             .passwordHash(bcrypt.encode(body.password()))
                             .role(body.role())
                             .build());
-                    String token = jwt.sign(u.getId(), u.getRole());
+                    String token = jwt.sign(u.getId(), u.getRole(), u.getPhone());
                     return new VerifyResponse(token, new UserDto(u.getId(), u.getPhone(), u.getRole()), true);
                 });
     }
@@ -157,7 +157,7 @@ public class AuthController {
                     .build());
         }
 
-        return new TokenResponse(jwt.sign(u.getId(), u.getRole()),
+        return new TokenResponse(jwt.sign(u.getId(), u.getRole(), u.getPhone()),
                 new UserDto(u.getId(), u.getPhone(), u.getRole()));
     }
 
@@ -170,7 +170,7 @@ public class AuthController {
         String hash = u != null ? u.getPasswordHash() : DUMMY_HASH;
         boolean ok = bcrypt.matches(body.password(), hash);
         if (u == null || !ok) throw ApiException.unauthorized("Telefon yoki parol noto'g'ri");
-        return new TokenResponse(jwt.sign(u.getId(), u.getRole()),
+        return new TokenResponse(jwt.sign(u.getId(), u.getRole(), u.getPhone()),
                 new UserDto(u.getId(), u.getPhone(), u.getRole()));
     }
 
