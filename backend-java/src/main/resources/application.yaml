@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: backend-java
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+server:
+  port: ${PORT:3001}
+  forward-headers-strategy: framework
+  servlet:
+    encoding:
+      force: true
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    uz.sonic.backend: ${APP_LOG_LEVEL:INFO}
+
+romchi:
+  jwt:
+    secret: ${JWT_SECRET:romchi-dev-secret-change-me-romchi-dev-secret-change-me}
+    ttl-days: 30
+  upload:
+    dir: ${UPLOAD_DIR:./uploads}
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:}
+  admin:
+    phones: ${ADMIN_PHONES:}
+  sms:
+    eskiz-email: ${ESKIZ_EMAIL:}
+    eskiz-password: ${ESKIZ_PASSWORD:}
+    cooldown-sec: ${SMS_COOLDOWN_SEC:60}
+    limit-phone-hour: ${SMS_LIMIT_PHONE_HOUR:10}
+    limit-ip-hour: ${SMS_LIMIT_IP_HOUR:30}
+    limit-ip-day: ${SMS_LIMIT_IP_DAY:100}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:file:./data/romchi;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  h2:
+    console:
+      enabled: true
+      path: /h2
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver

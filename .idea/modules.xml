@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/romchi-market-frontend.iml" filepath="$PROJECT_DIR$/.idea/romchi-market-frontend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/backend-java/backend-java.iml" filepath="$PROJECT_DIR$/backend-java/backend-java.iml" />
+      <module fileurl="file://$PROJECT_DIR$/frontend/frontend.iml" filepath="$PROJECT_DIR$/frontend/frontend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/romchi-market.iml" filepath="$PROJECT_DIR$/.idea/romchi-market.iml" />
     </modules>
   </component>
 </project>
