@@ -1,65 +1,89 @@
-import Image from "next/image";
+'use client';
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { Logo } from '@/components/Logo';
+import { SectionIcon } from '@/components/SectionIcon';
+import { auth, api } from '@/lib/api';
 
-export default function Home() {
+const SECTIONS: {
+  id: string;
+  icon: 'briefcase' | 'recycle' | 'gear' | 'factory' | 'wrench' | 'hardhat' | 'rainbow' | 'truck';
+  title: string;
+  sub: string;
+  path: string;
+}[] = [
+  { id: 'romchi-ish', icon: 'briefcase', title: 'Romchi Ish', sub: "Termo · PVX · Alyumin ish va ishchi qidirish", path: '/romchi-ish' },
+  { id: 'usluga', icon: 'wrench', title: 'Uslugachilar', sub: 'Turli xizmatlar va uslugalar', path: '/usluga' },
+  { id: 'atxod', icon: 'recycle', title: 'Atxod oluvchilar', sub: 'Alyumin, PVX, Termo atxod sotish va sotib olish', path: '/atxod' },
+  { id: 'ustanofka', icon: 'hardhat', title: 'Ustanofka brigada', sub: "Tayyor rom va eshik-derazani o'rnatuvchi brigadalar", path: '/ustanofka' },
+  { id: 'stanok', icon: 'gear', title: 'Stanok remont', sub: "Stanok ta'mirlash va sozlash ustalari", path: '/stanok' },
+  { id: 'arkachilar', icon: 'rainbow', title: 'Arkachilar', sub: 'Profillarni ark shaklida tayyorlovchi ustalar', path: '/arkachilar' },
+  { id: 'stanok-ads', icon: 'factory', title: "Stanok e'lonlari", sub: 'Yangi va ishlatilgan stanoklar oldi-sotdi', path: '/stanok-ads' },
+  { id: 'delivery', icon: 'truck', title: 'Dostavkachilar', sub: 'Yuk tashish va kichik dostavka xizmatlari', path: '/delivery' },
+];
+
+const NAME_KEY = 'romchi_user_name';
+
+export default function HomePage() {
+  const router = useRouter();
+  const [ready, setReady] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!auth.token() || !localStorage.getItem(NAME_KEY)) {
+      router.replace('/welcome');
+      return;
+    }
+    if (auth.token() && !auth.user()) {
+      api.me()
+        .then(m => auth.setUser(m.user))
+        .catch(() => auth.clear());
+    }
+    setReady(true);
+  }, [router]);
+
+  if (!ready) return null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '32px 16px 80px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', padding: '12px 0 8px' }}>
+          <Logo size={36} />
+          <h1 style={{ fontSize: 28, fontWeight: 800, margin: '14px 0 0', color: 'var(--ink)', letterSpacing: '-0.02em' }}>Xush kelibsiz!</h1>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: 14, marginTop: 28,
+        }}>
+          {SECTIONS.map(s => (
+            <button
+              key={s.id}
+              onClick={() => router.push(s.path)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px',
+                background: '#fff', border: '1px solid var(--line)', borderRadius: 18,
+                cursor: 'pointer', textAlign: 'left', width: '100%',
+                boxShadow: '0 1px 2px rgba(15,23,42,.04)',
+                transition: 'transform .1s, box-shadow .15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(15,23,42,.06)')}
+              onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 2px rgba(15,23,42,.04)')}
+            >
+              <div style={{
+                width: 96, height: 96, borderRadius: 18,
+                background: '#EEF1F5', display: 'grid', placeItems: 'center', flexShrink: 0,
+              }}>
+                <SectionIcon name={s.icon} size={80} color="#1F2937" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{s.title}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{s.sub}</div>
+              </div>
+              <span style={{ color: '#9CA3AF', fontSize: 18, flexShrink: 0 }}>›</span>
+            </button>
+          ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
