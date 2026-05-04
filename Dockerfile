@@ -1,18 +1,18 @@
-FROM node:20-alpine AS frontend
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-COPY public ./public
-COPY src ./src
-COPY tsconfig.json ./
-RUN npm run build
+# Default Dockerfile builds the backend so a single-image deploy keeps
+# working out of the box. Each module also has its own Dockerfile —
+# prefer those (`backend-java/Dockerfile`, `frontend/Dockerfile`) when
+# deploying the two services separately, e.g. via render.yaml below.
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /src
+COPY backend-java/.mvn .mvn
+COPY backend-java/mvnw backend-java/pom.xml ./
+RUN ./mvnw -q -DskipTests dependency:go-offline
+COPY backend-java/src ./src
+RUN ./mvnw -q -DskipTests package -B && cp target/*.jar /app.jar
 
-FROM node:20-alpine
+FROM eclipse-temurin:25-jre
 WORKDIR /app
-COPY backend/package.json backend/package-lock.json ./
-RUN npm install --omit=dev
-COPY backend/src ./src
-COPY --from=frontend /app/build ./build
-ENV PORT=3000
-EXPOSE 3000
-CMD ["node", "src/server.js"]
+COPY --from=build /app.jar /app/app.jar
+ENV PORT=3001 SPRING_PROFILES_ACTIVE=prod UPLOAD_DIR=/app/uploads
+EXPOSE 3001
+CMD ["java", "-jar", "/app/app.jar"]

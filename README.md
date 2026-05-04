@@ -1,46 +1,46 @@
-# Getting Started with Create React App
+# Romchi Market
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Two-module project:
 
-## Available Scripts
+- **`backend-java/`** — Spring Boot 4 REST API (Java 25, Maven). JWT auth,
+  SMS verification (Eskiz.uz), file uploads, JPA + Postgres/H2.
+- **`frontend/`** — Next.js 16 (React 19, Tailwind 4). All UI lives here.
 
-In the project directory, you can run:
+## Local development
 
-### `npm start`
+```bash
+# Terminal 1 — backend (H2 file db, dev profile)
+cd backend-java
+./mvnw spring-boot:run        # http://localhost:3001
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# Terminal 2 — frontend
+cd frontend
+npm install                   # first time
+npm run dev                   # http://localhost:3000
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+The frontend rewrites `/api/*` and `/uploads/*` to `BACKEND_ORIGIN`
+(`http://localhost:3001` by default), so client `fetch('/api/...')`
+calls reach the Java backend transparently in both dev and prod.
 
-### `npm test`
+## Deployment
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Each module has its own `Dockerfile`. The `render.yaml` at the repo root
+provisions a Postgres database plus two Render services
+(`romchi-backend` and `romchi-frontend`) wired together via
+`BACKEND_ORIGIN` and `ALLOWED_ORIGINS`. The top-level `Dockerfile` is a
+shortcut that builds only the backend image — useful for single-service
+hosts.
 
-### `npm run build`
+## Environment
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Backend: see `backend-java/.env.example`. Required in prod:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `JWT_SECRET` — 32+ char random string
+- `DATABASE_URL` — `jdbc:postgresql://…` or use the `dev` profile for H2
+- `ALLOWED_ORIGINS` — comma-separated list of allowed frontend URLs
+- `ESKIZ_EMAIL` / `ESKIZ_PASSWORD` — for live SMS (omit to log codes to
+  console in dev)
+- `ADMIN_PHONES` — comma-separated phones that get the admin role
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Frontend: only `BACKEND_ORIGIN` (default `http://localhost:3001`).
