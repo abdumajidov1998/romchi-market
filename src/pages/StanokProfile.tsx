@@ -1,12 +1,9 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Badge, Btn, Card, EmptyState, TelegramIcon } from '../ui';
+import { Avatar, Badge, Btn, Card, EmptyState, TelegramIcon, tgHref } from '../ui';
 import { api } from '../api';
+import { StanokSpecIcon } from '../StanokSpecIcon';
 
-const SPEC_ICONS: Record<string, string> = {
-  'Kesish stanogi': '🔪', 'Payvandlash stanogi': '⚡', 'Pressovka stanogi': '🏗',
-  'Frezerlash stanogi': '⚙️', 'Kompressor': '💨', 'Arra chaxlovchi': '🪚',
-};
 const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '---';
 const initials = (n: string) => (n || '?').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
 
@@ -29,7 +26,7 @@ export const StanokProfile: React.FC = () => {
   return (
     <div style={{ maxWidth: 540, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>←</button>
+        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ fontWeight: 700, fontSize: 15 }}>Stanok ustasi</div>
         <div style={{ width: 38 }} />
       </div>
@@ -55,7 +52,7 @@ export const StanokProfile: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {(m.specs || []).map((s: string) => (
             <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--blue-50)', borderRadius: 12 }}>
-              <span style={{ fontSize: 22 }}>{SPEC_ICONS[s] || '🔧'}</span>
+              <StanokSpecIcon name={s} size={26} color="var(--blue)" />
               <span style={{ fontWeight: 600, fontSize: 15 }}>{s}</span>
             </div>
           ))}
@@ -65,10 +62,18 @@ export const StanokProfile: React.FC = () => {
       <Card style={{ marginTop: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>💰 Narxlar</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px', background: '#ECFDF5', borderRadius: 12 }}>
-            <span style={{ fontWeight: 600 }}>⚡ Diagnostika / Chaqiruv</span>
-            <span style={{ fontWeight: 800, color: '#10B981' }}>{m.priceDiagnostika ? `${fmt(m.priceDiagnostika)} so'm` : 'Kelishiladi'}</span>
-          </div>
+          {(m.specs || []).some((s: string) => s !== 'Arra chaxlovchi') && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px', background: '#ECFDF5', borderRadius: 12 }}>
+              <span style={{ fontWeight: 600 }}>⚡ Diagnostika / Chaqiruv</span>
+              <span style={{ fontWeight: 800, color: '#10B981' }}>{m.priceDiagnostika ? `${fmt(m.priceDiagnostika)} so'm` : 'Kelishiladi'}</span>
+            </div>
+          )}
+          {(m.specs || []).includes('Arra chaxlovchi') && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px', background: '#FEF3C7', borderRadius: 12 }}>
+              <span style={{ fontWeight: 600 }}>🪚 Arra charxlash</span>
+              <span style={{ fontWeight: 800, color: '#D97706' }}>{m.priceCharxlash ? `${fmt(m.priceCharxlash)} so'm` : 'Kelishiladi'}</span>
+            </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--bg)', borderRadius: 12 }}>
             <span style={{ fontWeight: 600 }}>🔧 Remont</span>
             <span style={{ fontWeight: 800, color: 'var(--ink)' }}>Kelishiladi</span>
@@ -93,7 +98,7 @@ export const StanokProfile: React.FC = () => {
         <a href={m.phone ? `tel:${m.phone}` : undefined} style={{ textDecoration: 'none', opacity: m.phone ? 1 : .5, pointerEvents: m.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo'ng'iroq</Btn>
         </a>
-        <a href={m.telegram ? `https://t.me/${m.telegram}` : m.phone ? `https://t.me/+${String(m.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', opacity: (m.telegram || m.phone) ? 1 : .5, pointerEvents: (m.telegram || m.phone) ? 'auto' : 'none' }}>
+        <a href={tgHref(m.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(m.telegram) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

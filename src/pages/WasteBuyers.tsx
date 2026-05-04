@@ -1,11 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Btn, Badge, EmptyState, TelegramIcon } from '../ui';
+import { Card, Btn, Badge, EmptyState, TelegramIcon, tgHref } from '../ui';
+import { usePersistedState } from '../persist';
 import { useIsDesktop } from '../Layout';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { Chip } from '../ui';
 import { SpecIcon } from '../SpecIcon';
+import { WASTE_MATERIALS as MATERIALS } from '../constants';
+import { getSavedCoords, requestCoords } from '../userLocation';
+import { LocationPickerModal } from '../components/LocationPickerModal';
+import { SectionIcon } from '../components/SectionIcon';
 
 const RADII = [5, 10, 15, 25, 50];
 
@@ -17,13 +22,6 @@ const haversine = (a: { lat: number; lng: number }, b: { lat: number; lng: numbe
   const s = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(s));
 };
-
-const MATERIALS = [
-  { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
-  { key: 'pricePvxOq', label: 'PVX Oq', spec: 'PVX Oq' },
-  { key: 'pricePvxRangli', label: 'PVX Rangli', spec: 'PVX' },
-  { key: 'priceAlyumin', label: 'Alyumin', spec: 'Alyumin' },
-];
 
 const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '—';
 
@@ -43,23 +41,23 @@ const BuyerCard: React.FC<{ b: any }> = ({ b }) => (
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginTop: 12 }}>
-        {MATERIALS.map(m => {
-          const price = b[m.key] || 0;
-          return (
-            <div key={m.key} style={{
-              display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px',
-              background: price > 0 ? 'var(--blue-50)' : 'var(--bg)', borderRadius: 10, fontSize: 13,
-            }}>
-              <SpecIcon name={m.spec} size={24} />
-              <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{m.label}</span>
-              <span style={{ marginLeft: 'auto', fontWeight: 700, color: price > 0 ? 'var(--blue)' : 'var(--muted)' }}>
-                {price > 0 ? `${fmt(price)} so'm` : '—'}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      {(() => {
+        const items = MATERIALS.filter(m => (b[m.key] || 0) > 0);
+        if (items.length === 0) return null;
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginTop: 12 }}>
+            {items.map(m => (
+              <div key={m.key} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 6px',
+                background: 'var(--blue-50)', borderRadius: 10, textAlign: 'center',
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--ink)', fontSize: 12 }}>{m.label}</span>
+                <span style={{ fontWeight: 700, color: 'var(--blue)', fontSize: 13 }}>{fmt(b[m.key])} so'm</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
     </Link>
 
     <div style={{ height: 1, background: 'var(--line)', margin: '12px 0' }} />
@@ -67,7 +65,7 @@ const BuyerCard: React.FC<{ b: any }> = ({ b }) => (
       <a href={b.phone ? `tel:${b.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: b.phone ? 1 : .5, pointerEvents: b.phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
       </a>
-      <a href={b.telegram ? `https://t.me/${b.telegram}` : b.phone ? `https://t.me/+${String(b.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', opacity: (b.telegram || b.phone) ? 1 : .5, pointerEvents: (b.telegram || b.phone) ? 'auto' : 'none' }}>
+      <a href={tgHref(b.telegram)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(b.telegram) ? undefined : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
       </a>
     </div>
@@ -77,77 +75,102 @@ const BuyerCard: React.FC<{ b: any }> = ({ b }) => (
 export const WasteBuyers: React.FC = () => {
   const desktop = useIsDesktop();
   const nav = useNavigate();
-  const [q, setQ] = React.useState('');
   const [list, setList] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
-  const [nearbyOn, setNearbyOn] = React.useState(false);
-  const [radiusKm, setRadiusKm] = React.useState<number>(15);
-  const [myCoords, setMyCoords] = React.useState<{ lat: number; lng: number } | null>(null);
+  const [nearbyOn, setNearbyOn] = usePersistedState('filters:waste:nearbyOn', false);
+  const [radiusKm, setRadiusKm] = usePersistedState<number>('filters:waste:radiusKm', 15);
+  const [myCoords, setMyCoords] = React.useState<{ lat: number; lng: number } | null>(getSavedCoords());
   const [geoBusy, setGeoBusy] = React.useState(false);
-  const [geoError, setGeoError] = React.useState('');
+  const [selectedMaterials, setSelectedMaterials] = usePersistedState<string[]>('filters:waste:materials', []);
+  const [matOpen, setMatOpen] = React.useState(false);
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const toggleMat = (k: string) => setSelectedMaterials(p => p.includes(k) ? p.filter(x => x !== k) : [...p, k]);
 
-  const enableNearby = () => {
+  const enableNearby = async () => {
     if (nearbyOn) { setNearbyOn(false); return; }
-    setGeoError('');
-    if (!navigator.geolocation) { setGeoError('Brauzeringiz lokatsiyani qo\'llab-quvvatlamaydi'); return; }
+    if (myCoords) { setNearbyOn(true); return; }
     setGeoBusy(true);
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        setMyCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setNearbyOn(true);
-        setGeoBusy(false);
-      },
-      err => {
-        setGeoError(err.code === 1 ? 'Lokatsiyaga ruxsat bermadingiz' : 'Lokatsiyani aniqlab bo\'lmadi');
-        setGeoBusy(false);
-      },
-      { enableHighAccuracy: true, timeout: 15000 },
-    );
+    try {
+      const c = await requestCoords();
+      setMyCoords(c);
+      setNearbyOn(true);
+    } catch {
+      setPickerOpen(true);
+    } finally {
+      setGeoBusy(false);
+    }
   };
 
   React.useEffect(() => {
     let ok = true;
     setLoading(true);
-    api.wasteBuyers({ q: q || undefined })
+    api.wasteBuyers()
       .then(d => { if (ok) { setList(d); setError(''); } })
       .catch(e => ok && setError(e.message))
       .finally(() => { if (ok) setLoading(false); });
     return () => { ok = false; };
-  }, [q]);
+  }, []);
 
   const filtered = React.useMemo(() => {
-    if (!nearbyOn || !myCoords) return list;
-    return list
-      .map(b => {
-        if (typeof b.lat === 'number' && typeof b.lng === 'number') {
-          return { ...b, distanceKm: haversine(myCoords, { lat: b.lat, lng: b.lng }) };
-        }
-        return { ...b, distanceKm: Infinity };
-      })
-      .filter(b => b.distanceKm <= radiusKm)
-      .sort((a, b) => a.distanceKm - b.distanceKm);
-  }, [list, nearbyOn, myCoords, radiusKm]);
+    let result = list;
+    if (selectedMaterials.length > 0) {
+      result = result.filter(b => selectedMaterials.some(k => (b[k] || 0) > 0));
+    }
+    if (nearbyOn && myCoords) {
+      result = result
+        .map(b => {
+          if (typeof b.lat === 'number' && typeof b.lng === 'number') {
+            return { ...b, distanceKm: haversine(myCoords, { lat: b.lat, lng: b.lng }) };
+          }
+          return { ...b, distanceKm: Infinity };
+        })
+        .filter(b => b.distanceKm <= radiusKm)
+        .sort((a, b) => a.distanceKm - b.distanceKm);
+    }
+    return result;
+  }, [list, selectedMaterials, nearbyOn, myCoords, radiusKm]);
 
   const Header = (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
+        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ textAlign: 'center', flex: 1 }}>
-          <div style={{ fontSize: 12, color: 'var(--muted)' }}>♻️ Atxod xizmati</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+            <SectionIcon name="recycle" size={14} /> Atxod xizmati
+          </div>
           <div style={{ fontWeight: 800, fontSize: desktop ? 26 : 20 }}>Atxod oluvchilar</div>
         </div>
-        <button onClick={() => nav('/atxod/create')} style={{ width: 38, height: 38, borderRadius: 12, background: 'var(--blue)', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer', fontWeight: 700 }}>+</button>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: '12px 14px', marginBottom: 12 }}>
-        <span style={{ color: 'var(--muted)' }}>🔍</span>
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Atxod oluvchi qidirish…" style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, background: 'transparent' }} />
+        <div style={{ width: 38 }} />
       </div>
       <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, alignItems: 'center' }}>
         <Chip on={nearbyOn} onClick={enableNearby}>
           {geoBusy ? '⏳ Aniqlanmoqda…' : '📍 Yaqin atrofdagilar'}
         </Chip>
+        <Chip on={matOpen || selectedMaterials.length > 0} onClick={() => setMatOpen(!matOpen)}>
+          {selectedMaterials.length > 0 ? `♻️ ${selectedMaterials.length} ta tanlandi` : '♻️ Material turi'}
+        </Chip>
       </div>
+      {matOpen && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+          {MATERIALS.map(m => {
+            const on = selectedMaterials.includes(m.key);
+            return (
+              <button key={m.key} type="button" onClick={() => toggleMat(m.key)} style={{
+                padding: '10px 4px', borderRadius: 12, cursor: 'pointer',
+                background: on ? 'var(--blue-50)' : '#fff',
+                border: `1.5px solid ${on ? 'var(--blue)' : 'var(--line)'}`,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                position: 'relative',
+              }}>
+                <SpecIcon name={m.spec} size={28} />
+                <div style={{ fontWeight: 700, fontSize: 11, color: on ? 'var(--blue)' : 'var(--ink)', textAlign: 'center' }}>{m.label}</div>
+                {on && <div style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, borderRadius: 999, background: 'var(--blue)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700 }}>✓</div>}
+              </button>
+            );
+          })}
+        </div>
+      )}
       {nearbyOn && (
         <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 12, color: 'var(--muted)', flexShrink: 0 }}>Radius:</span>
@@ -156,11 +179,16 @@ export const WasteBuyers: React.FC = () => {
           ))}
         </div>
       )}
-      {geoError && <div style={{ marginBottom: 8, padding: 10, background: '#FEE2E2', color: '#DC2626', borderRadius: 12, fontSize: 12, fontWeight: 500 }}>⚠️ {geoError}</div>}
+      <LocationPickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onPicked={c => { setMyCoords(c); setNearbyOn(true); }}
+      />
       <div style={{ display: 'flex', justifyContent: 'space-between', margin: '6px 2px 12px' }}>
         <div style={{ fontSize: 13, color: 'var(--muted)' }}>
           <b style={{ color: 'var(--ink)' }}>{filtered.length}</b> ta atxod oluvchi
           {nearbyOn && <> · {radiusKm} km radiusda</>}
+          {selectedMaterials.length > 0 && <> · {selectedMaterials.map(k => MATERIALS.find(m => m.key === k)?.label).filter(Boolean).join(', ')}</>}
         </div>
       </div>
     </>

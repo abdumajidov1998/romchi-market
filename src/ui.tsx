@@ -3,6 +3,15 @@ import { Worker, Job } from './data';
 import { Link } from 'react-router-dom';
 import { SpecIcon } from './SpecIcon';
 
+// Telegram username bo'lsa to'g'ri link qaytaradi, aks holda undefined.
+// `t.me/+998...` ko'rinishidagi raqamli linklar Telegram-da ishlamaydi (User not found),
+// shuning uchun faqat haqiqiy username bo'lganda link beriladi; aks holda tugma o'chiriladi.
+export const tgHref = (telegram?: string | null): string | undefined => {
+  if (!telegram) return undefined;
+  const clean = String(telegram).replace(/^@/, '').trim();
+  return clean ? `https://t.me/${clean}` : undefined;
+};
+
 export const TelegramIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <circle cx="12" cy="12" r="12" fill="#2AABEE" />
@@ -130,7 +139,6 @@ export const WorkerCard: React.FC<{ worker: Worker; compact?: boolean }> = ({ wo
         </div>
       </Link>
       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 13 }}>{(worker.rating || 0).toFixed(1)} <span style={{ color: 'var(--amber)' }}>★</span></div>
         <div style={{ fontSize: 11, color: 'var(--muted)' }}>📍 {worker.city}</div>
       </div>
     </div>
@@ -138,15 +146,15 @@ export const WorkerCard: React.FC<{ worker: Worker; compact?: boolean }> = ({ wo
       <>
         <div style={{ height: 1, background: 'var(--line)', margin: '14px 0' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-          {worker.top ? <Badge tone="amber">⭐ Top ishchi</Badge> : worker.active === 'now' ? <Badge tone="green">● Hozir onlayn</Badge> : <Badge>Tasdiqlangan</Badge>}
+          {worker.active === 'now' ? <Badge tone="green">● Hozir onlayn</Badge> : <Badge>Tasdiqlangan</Badge>}
           <div style={{ display: 'flex', gap: 6 }}>
             {worker.phone && (
               <a href={`tel:${worker.phone}`} onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>
                 <Btn variant="soft" style={{ padding: '8px 12px', fontSize: 13 }}>📞 Qo‘ng‘iroq</Btn>
               </a>
             )}
-            {((worker as any).telegram || worker.phone) && (
-              <a href={(worker as any).telegram ? `https://t.me/${String((worker as any).telegram).replace(/^@/, '')}` : `https://t.me/+${String(worker.phone).replace(/\D/g, '')}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>
+            {tgHref((worker as any).telegram) && (
+              <a href={tgHref((worker as any).telegram)} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>
                 <Btn variant="soft" style={{ padding: '8px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}><TelegramIcon size={20} /></Btn>
               </a>
             )}
@@ -180,7 +188,7 @@ export const JobCard: React.FC<{ job: Job }> = ({ job }) => (
           </div>
         </div>
       </Link>
-      {job.badge && <Badge tone={job.badge === 'New' ? 'green' : job.badge === 'Top' ? 'amber' : job.badge === 'Urgent' ? 'amber' : 'blue'}>{({ New: 'Yangi', Top: '⭐ Eng yaxshi', Verified: 'Tasdiqlangan', Urgent: 'Shoshilinch' } as const)[job.badge]}</Badge>}
+      {job.badge && job.badge !== 'Top' && <Badge tone={job.badge === 'New' ? 'green' : job.badge === 'Urgent' ? 'amber' : 'blue'}>{({ New: 'Yangi', Verified: 'Tasdiqlangan', Urgent: 'Shoshilinch' } as const)[job.badge as 'New' | 'Verified' | 'Urgent']}</Badge>}
     </div>
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
       <Chip soft>{job.workType}</Chip>
@@ -188,11 +196,18 @@ export const JobCard: React.FC<{ job: Job }> = ({ job }) => (
       {job.experience && <Chip soft>{job.experience}</Chip>}
     </div>
     <div style={{ height: 1, background: 'var(--line)', margin: '14px 0' }} />
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div style={{ fontWeight: 800, fontSize: 16 }}>
-        {formatUZS(job.salaryFrom)}–{formatUZS(job.salaryTo)} <span style={{ color: 'var(--muted)', fontWeight: 500, fontSize: 12 }}>so‘m / oy</span>
-      </div>
-      <Btn style={{ padding: '9px 16px', fontSize: 13 }}>Tezkor ariza</Btn>
+    <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 10 }}>
+      {formatUZS(job.salaryFrom)}–{formatUZS(job.salaryTo)} <span style={{ color: 'var(--muted)', fontWeight: 500, fontSize: 12 }}>so‘m / oy</span>
+    </div>
+    <div style={{ display: 'flex', gap: 6 }}>
+      <a href={(job as any).phone ? `tel:${(job as any).phone}` : undefined} onClick={e => e.stopPropagation()} style={{ flex: 1, textDecoration: 'none', opacity: (job as any).phone ? 1 : .5, pointerEvents: (job as any).phone ? 'auto' : 'none' }}>
+        <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo‘ng‘iroq</Btn>
+      </a>
+      {tgHref((job as any).telegram) && (
+        <a href={tgHref((job as any).telegram)} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ flex: 1, textDecoration: 'none' }}>
+          <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
+        </a>
+      )}
     </div>
   </Card>
 );

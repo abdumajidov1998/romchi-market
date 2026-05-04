@@ -53,7 +53,7 @@ export const MapPicker: React.FC<{
   city?: string;
   district?: string;
   height?: number;
-}> = ({ value, onChange, city, height = 260 }) => {
+}> = ({ value, onChange, city, height = 200 }) => {
   const [recenterBump, setRecenterBump] = React.useState(0);
   const [detecting, setDetecting] = React.useState(false);
   const [geoError, setGeoError] = React.useState('');

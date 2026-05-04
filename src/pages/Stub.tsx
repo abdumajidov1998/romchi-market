@@ -53,6 +53,7 @@ export const Profile: React.FC = () => {
   const [profiles, setProfiles] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [deleting, setDeleting] = React.useState('');
+  const [delError, setDelError] = React.useState('');
 
   const load = async () => {
     if (!auth.token()) { setLoading(false); return; }
@@ -69,13 +70,19 @@ export const Profile: React.FC = () => {
 
   const del = async (type: string) => {
     setDeleting(type);
+    setDelError('');
     try {
-      if (type === 'worker') await api.deleteWorker();
-      if (type === 'wasteBuyer') await api.deleteWasteBuyer();
-      if (type === 'usluga') await api.deleteUsluga();
-      if (type === 'stanok') await api.deleteStanok();
+      if (type === 'worker')         await api.deleteWorker();
+      if (type === 'wasteBuyer')     await api.deleteWasteBuyer();
+      if (type === 'usluga')         await api.deleteUsluga();
+      if (type === 'stanok')         await api.deleteStanok();
+      if (type === 'delivery')       await api.deleteDelivery();
+      if (type === 'installBrigada') await api.deleteInstallBrigade();
+      if (type === 'arkachi')        await api.deleteArkachi();
       await load();
-    } catch {}
+    } catch (e: any) {
+      setDelError(e?.message || "O'chirishda xatolik");
+    }
     finally { setDeleting(''); }
   };
 
@@ -90,12 +97,13 @@ export const Profile: React.FC = () => {
     </div>
   );
 
-  const hasAny = profiles?.worker || profiles?.wasteBuyer || profiles?.usluga || profiles?.stanok;
+  const hasAny = profiles?.worker || profiles?.wasteBuyer || profiles?.usluga || profiles?.stanok
+              || profiles?.delivery || profiles?.installBrigada || profiles?.arkachi;
 
   return (
     <div style={{ maxWidth: 540, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
+        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ fontWeight: 800, fontSize: 20 }}>Mening profilim</div>
         <div style={{ width: 38 }} />
       </div>
@@ -104,6 +112,19 @@ export const Profile: React.FC = () => {
         <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Telefon</div>
         <div style={{ fontWeight: 700, fontSize: 16, marginTop: 4 }}>{me.user.phone}</div>
       </Card>
+
+      {me.isAdmin && (
+        <Card style={{ marginTop: 12, background: 'var(--blue-50)', border: '1px solid var(--blue)', cursor: 'pointer' }} onClick={() => nav('/admin')}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontSize: 28 }}>⚙️</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--blue)' }}>Admin panel</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)' }}>Foydalanuvchilar va e'lonlarni boshqarish</div>
+            </div>
+            <div style={{ color: 'var(--blue)', fontSize: 18 }}>→</div>
+          </div>
+        </Card>
+      )}
 
       {profiles?.worker && (
         <ProfileCard
@@ -149,6 +170,45 @@ export const Profile: React.FC = () => {
         />
       )}
 
+      {profiles?.installBrigada && (
+        <ProfileCard
+          icon="👷" title="Ustanofka brigada"
+          name={profiles.installBrigada.name}
+          sub={`📍 ${profiles.installBrigada.city} · ${(profiles.installBrigada.specs || []).join(', ')}`}
+          editPath="/ustanofka/create"
+          onDelete={() => del('installBrigada')}
+          deleting={deleting === 'installBrigada'}
+        />
+      )}
+
+      {profiles?.arkachi && (
+        <ProfileCard
+          icon="🔩" title="Arkachi"
+          name={profiles.arkachi.name}
+          sub={`📍 ${profiles.arkachi.city} · ${(profiles.arkachi.specs || []).join(', ')}`}
+          editPath="/arkachilar/create"
+          onDelete={() => del('arkachi')}
+          deleting={deleting === 'arkachi'}
+        />
+      )}
+
+      {profiles?.delivery && (
+        <ProfileCard
+          icon="🚚" title="Dostavkachi"
+          name={profiles.delivery.name}
+          sub={`📍 ${profiles.delivery.city} · ${profiles.delivery.vehicle_model || ''}`}
+          editPath="/delivery/create"
+          onDelete={() => del('delivery')}
+          deleting={deleting === 'delivery'}
+        />
+      )}
+
+      {delError && (
+        <Card style={{ marginTop: 12, background: '#FEE2E2', border: '1px solid #DC2626', color: '#DC2626' }}>
+          ⚠️ {delError}
+        </Card>
+      )}
+
       {!hasAny && (
         <Card style={{ marginTop: 12, textAlign: 'center', padding: 24 }}>
           <div style={{ fontSize: 32 }}>📋</div>
@@ -183,6 +243,24 @@ export const Profile: React.FC = () => {
           <button type="button" onClick={() => nav('/usluga/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}>
             <div style={{ fontSize: 20 }}>🛠️</div>
             <div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Uslugachi</div>
+          </button>
+        )}
+        {!profiles?.installBrigada && (
+          <button type="button" onClick={() => nav('/ustanofka/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}>
+            <div style={{ fontSize: 20 }}>👷</div>
+            <div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Ustanofka</div>
+          </button>
+        )}
+        {!profiles?.arkachi && (
+          <button type="button" onClick={() => nav('/arkachilar/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}>
+            <div style={{ fontSize: 20 }}>🔩</div>
+            <div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Arkachi</div>
+          </button>
+        )}
+        {!profiles?.delivery && (
+          <button type="button" onClick={() => nav('/delivery/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}>
+            <div style={{ fontSize: 20 }}>🚚</div>
+            <div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Dostavka</div>
           </button>
         )}
       </div>

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Badge, Btn, Card, Chip, EmptyState, formatUZS } from '../ui';
+import { Badge, Btn, Card, Chip, EmptyState, formatUZS, TelegramIcon, tgHref } from '../ui';
 import { api, auth } from '../api';
 import { SpecIcon } from '../SpecIcon';
 
-const BADGE_UZ: Record<string, string> = { New: 'Yangi', Top: '⭐ Eng yaxshi', Verified: 'Tasdiqlangan', Urgent: 'Shoshilinch' };
+const BADGE_UZ: Record<string, string> = { New: 'Yangi', Verified: 'Tasdiqlangan', Urgent: 'Shoshilinch' };
 
 export const JobDetail: React.FC = () => {
   const { id } = useParams();
@@ -47,7 +47,7 @@ export const JobDetail: React.FC = () => {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>←</button>
+        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ fontWeight: 700, fontSize: 15 }}>Vakansiya</div>
         <button style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>⋯</button>
       </div>
@@ -58,7 +58,7 @@ export const JobDetail: React.FC = () => {
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.02em' }}>{j.title}</div>
             <div style={{ color: 'var(--muted)', marginTop: 4 }}>{j.company} · {j.type === 'Factory' ? 'Zavod' : 'Ustaxona'}</div>
           </div>
-          {j.badge && <Badge tone={j.badge === 'New' ? 'green' : 'amber'}>{BADGE_UZ[j.badge] || j.badge}</Badge>}
+          {j.badge && j.badge !== 'Top' && BADGE_UZ[j.badge] && <Badge tone={j.badge === 'New' ? 'green' : 'amber'}>{BADGE_UZ[j.badge]}</Badge>}
         </div>
 
         {(j.specs || []).length > 0 && (
@@ -132,8 +132,12 @@ export const JobDetail: React.FC = () => {
         </>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
-          <Btn full>⚡ Tezkor ariza</Btn>
-          <Btn variant="ghost" full>Saqlash</Btn>
+          <a href={j.phone ? `tel:${j.phone}` : undefined} style={{ textDecoration: 'none', opacity: j.phone ? 1 : .5, pointerEvents: j.phone ? 'auto' : 'none' }}>
+            <Btn full>📞 Qo‘ng‘iroq</Btn>
+          </a>
+          <a href={tgHref(j.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(j.telegram) ? undefined : 'none' }}>
+            <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
+          </a>
         </div>
       )}
     </div>

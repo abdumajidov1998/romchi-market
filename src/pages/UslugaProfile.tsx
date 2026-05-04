@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Btn, Card, EmptyState, TelegramIcon } from '../ui';
+import { Avatar, Btn, Card, EmptyState, TelegramIcon, tgHref } from '../ui';
 import { api } from '../api';
 import { SpecIcon } from '../SpecIcon';
 
@@ -35,7 +35,7 @@ export const UslugaProfile: React.FC = () => {
   return (
     <div style={{ maxWidth: 540, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>←</button>
+        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ fontWeight: 700, fontSize: 15 }}>Uslugachi</div>
         <div style={{ width: 38 }} />
       </div>
@@ -101,7 +101,7 @@ export const UslugaProfile: React.FC = () => {
         <a href={p.phone ? `tel:${p.phone}` : undefined} style={{ textDecoration: 'none', opacity: p.phone ? 1 : .5, pointerEvents: p.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo'ng'iroq</Btn>
         </a>
-        <a href={p.telegram ? `https://t.me/${p.telegram}` : p.phone ? `https://t.me/+${String(p.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', opacity: (p.telegram || p.phone) ? 1 : .5, pointerEvents: (p.telegram || p.phone) ? 'auto' : 'none' }}>
+        <a href={tgHref(p.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(p.telegram) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

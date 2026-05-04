@@ -6,8 +6,9 @@ import { api, auth } from '../api';
 import { MapPicker } from '../components/MapPicker';
 import { PhoneVerify } from '../components/PhoneVerify';
 import { SpecIcon } from '../SpecIcon';
+import { USLUGA_SPECS as SPECS } from '../constants';
+import { SectionIcon } from '../components/SectionIcon';
 
-const SPECS = ['Termo', 'PVX', 'Alyumin', 'Surma'];
 
 export const CreateUsluga: React.FC = () => {
   const nav = useNavigate();
@@ -25,6 +26,27 @@ export const CreateUsluga: React.FC = () => {
   const [telegram, setTelegram] = React.useState('');
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [isEdit, setIsEdit] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!auth.token()) return;
+    api.myProfiles().then(p => {
+      const u = p?.usluga;
+      if (!u) return;
+      setIsEdit(true);
+      setName(u.name || '');
+      setCity(u.city || 'Toshkent');
+      setDistrict(u.district || '');
+      setAbout(u.about || '');
+      setSpecs(Array.isArray(u.specs) ? u.specs : []);
+      setPriceTermo(u.priceTermo ? String(u.priceTermo) : '');
+      setPricePvx(u.pricePvx ? String(u.pricePvx) : '');
+      setPriceAlyumin(u.priceAlyumin ? String(u.priceAlyumin) : '');
+      setPriceSurma(u.priceSurma ? String(u.priceSurma) : '');
+      setTelegram(u.telegram || '');
+      if (u.lat != null && u.lng != null) setCoords({ lat: Number(u.lat), lng: Number(u.lng) });
+    }).catch(() => {});
+  }, []);
 
   const toggle = (s: string) => setSpecs(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
   const pickCity = (c: string) => { setCity(c); setDistrict(''); };
@@ -55,12 +77,14 @@ export const CreateUsluga: React.FC = () => {
   return (
     <form onSubmit={submit} style={{ maxWidth: 540, margin: '0 auto', paddingBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button type="button" onClick={() => nav('/usluga')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
-        <div style={{ fontWeight: 700, fontSize: 15 }}>Sex/Ustaxona profili</div>
+        <button type="button" onClick={() => nav('/usluga')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>{isEdit ? 'Profilni tahrirlash' : 'Sex/Ustaxona profili'}</div>
         <div style={{ width: 38 }} />
       </div>
 
-      <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15 }}>🛠️ Uslugachi bo'ling</div>
+      <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <SectionIcon name="wrench" size={26} /> Uslugachi bo'ling
+      </div>
       <p style={{ color: 'var(--muted)', margin: '6px 0 16px', fontSize: 14 }}>Narxlaringizni belgilang — boshqa sexlar sizni topadi</p>
 
       {!verified && (

@@ -5,12 +5,10 @@ import { cities, regions } from '../data';
 import { api, auth } from '../api';
 import { MapPicker } from '../components/MapPicker';
 import { PhoneVerify } from '../components/PhoneVerify';
+import { STANOK_SPECS as SPECS } from '../constants';
+import { StanokSpecIcon } from '../StanokSpecIcon';
+import { SectionIcon } from '../components/SectionIcon';
 
-const SPECS = ['Kesish stanogi', 'Payvandlash stanogi', 'Pressovka stanogi', 'Frezerlash stanogi', 'Kompressor', 'Arra chaxlovchi'];
-const SPEC_ICONS: Record<string, string> = {
-  'Kesish stanogi': '🔪', 'Payvandlash stanogi': '⚡', 'Pressovka stanogi': '🏗',
-  'Frezerlash stanogi': '⚙️', 'Kompressor': '💨', 'Arra chaxlovchi': '🪚',
-};
 const EXP = ['1 yildan kam', '1-3 yil', '3-5 yil', '5+ yil'];
 
 export const CreateStanok: React.FC = () => {
@@ -22,12 +20,34 @@ export const CreateStanok: React.FC = () => {
   const [about, setAbout] = React.useState('');
   const [specs, setSpecs] = React.useState<string[]>([]);
   const [priceDiag, setPriceDiag] = React.useState('');
+  const [priceCharx, setPriceCharx] = React.useState('');
   const [urgent, setUrgent] = React.useState(false);
   const [experience, setExperience] = React.useState('');
   const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(null);
   const [telegram, setTelegram] = React.useState('');
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [isEdit, setIsEdit] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!auth.token()) return;
+    api.myProfiles().then(p => {
+      const s = p?.stanok;
+      if (!s) return;
+      setIsEdit(true);
+      setName(s.name || '');
+      setCity(s.city || 'Toshkent');
+      setDistrict(s.district || '');
+      setAbout(s.about || '');
+      setSpecs(Array.isArray(s.specs) ? s.specs : []);
+      setPriceDiag(s.priceDiagnostika ? String(s.priceDiagnostika) : '');
+      setPriceCharx(s.priceCharxlash ? String(s.priceCharxlash) : '');
+      setUrgent(!!s.urgent);
+      setExperience(s.experience || '');
+      setTelegram(s.telegram || '');
+      if (s.lat != null && s.lng != null) setCoords({ lat: Number(s.lat), lng: Number(s.lng) });
+    }).catch(() => {});
+  }, []);
 
   const toggle = (s: string) => setSpecs(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
   const pickCity = (c: string) => { setCity(c); setDistrict(''); };
@@ -35,6 +55,7 @@ export const CreateStanok: React.FC = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!auth.token()) { setError('Avval telefon raqamingizni tasdiqlang'); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     if (!name.trim() || !district || specs.length === 0) { setError('Ism, tuman va kamida 1 ta yo\'nalish tanlang'); return; }
     if (!coords) { setError('Xaritada joylashuvni belgilang'); return; }
     setSaving(true);
@@ -42,6 +63,7 @@ export const CreateStanok: React.FC = () => {
       await api.saveStanok({
         name: name.trim(), city, district, about: about.trim(), specs,
         priceDiagnostika: priceDiag ? Number(priceDiag.replace(/\D/g, '')) : 0,
+        priceCharxlash: priceCharx ? Number(priceCharx.replace(/\D/g, '')) : 0,
         urgent, experience,
         lat: coords?.lat, lng: coords?.lng,
         telegram: telegram.trim() || undefined,
@@ -54,12 +76,14 @@ export const CreateStanok: React.FC = () => {
   return (
     <form onSubmit={submit} style={{ maxWidth: 540, margin: '0 auto', paddingBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button type="button" onClick={() => nav('/stanok')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
-        <div style={{ fontWeight: 700, fontSize: 15 }}>Stanok ustasi profili</div>
+        <button type="button" onClick={() => nav('/stanok')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>{isEdit ? 'Profilni tahrirlash' : 'Stanok ustasi profili'}</div>
         <div style={{ width: 38 }} />
       </div>
 
-      <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15 }}>⚙️ Stanok ustasi bo'ling</div>
+      <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <SectionIcon name="gear" size={26} /> Stanok ustasi bo'ling
+      </div>
       <p style={{ color: 'var(--muted)', margin: '6px 0 16px', fontSize: 14 }}>Yo'nalish va narxni belgilang — mijozlar sizni topadi</p>
 
       {!verified && (
@@ -68,6 +92,12 @@ export const CreateStanok: React.FC = () => {
         </div>
       )}
 
+      {!verified ? (
+        <div style={{ padding: '20px 16px', background: '#FEF3C7', border: '1px solid #F59E0B', borderRadius: 12, color: '#92400E', fontSize: 14, textAlign: 'center' }}>
+          ⬆️ Profil ma'lumotlarini to'ldirish uchun avval telefon raqamingizni tasdiqlang
+        </div>
+      ) : (
+      <>
       <Field label="Ismingiz yoki kompaniya nomi">
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="Masalan: Anvar Stanok Servis" />
       </Field>
@@ -84,7 +114,7 @@ export const CreateStanok: React.FC = () => {
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
               position: 'relative',
             }}>
-              <span style={{ fontSize: 24 }}>{SPEC_ICONS[s]}</span>
+              <StanokSpecIcon name={s} size={32} color={on ? 'var(--blue)' : 'var(--ink)'} />
               <div style={{ fontWeight: 700, fontSize: 10, color: on ? 'var(--blue)' : 'var(--ink)', textAlign: 'center' }}>{s}</div>
               {on && <div style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, borderRadius: 999, background: 'var(--blue)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700 }}>✓</div>}
             </button>
@@ -92,9 +122,16 @@ export const CreateStanok: React.FC = () => {
         })}
       </div>
 
-      <Field label="⚡ Diagnostika / Chaqiruv narxi (so'm)">
-        <Input value={priceDiag} onChange={e => setPriceDiag(e.target.value)} placeholder="200 000 (bo'sh qoldiring = Kelishiladi)" inputMode="numeric" />
-      </Field>
+      {specs.some(s => s !== 'Arra chaxlovchi') && (
+        <Field label="⚡ Diagnostika / Chaqiruv narxi (so'm)">
+          <Input value={priceDiag} onChange={e => setPriceDiag(e.target.value)} placeholder="200 000 (bo'sh qoldiring = Kelishiladi)" inputMode="numeric" />
+        </Field>
+      )}
+      {specs.includes('Arra chaxlovchi') && (
+        <Field label="🪚 Arra charxlash narxi (so'm)">
+          <Input value={priceCharx} onChange={e => setPriceCharx(e.target.value)} placeholder="50 000 (bo'sh qoldiring = Kelishiladi)" inputMode="numeric" />
+        </Field>
+      )}
 
       <div style={{ fontWeight: 700, fontSize: 16, margin: '18px 0 10px' }}>Tajribangiz</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
@@ -159,6 +196,8 @@ export const CreateStanok: React.FC = () => {
       <Btn type="submit" full style={{ marginTop: 16, opacity: saving ? .6 : 1 }}>
         {saving ? 'Saqlanmoqda...' : 'Profilni saqlash →'}
       </Btn>
+      </>
+      )}
     </form>
   );
 };

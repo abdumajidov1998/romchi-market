@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Badge, Btn, Card, Chip, EmptyState, TelegramIcon } from '../ui';
+import { Avatar, Badge, Btn, Card, Chip, EmptyState, TelegramIcon, tgHref } from '../ui';
 import { api } from '../api';
 import { SpecIcon } from '../SpecIcon';
 
@@ -28,7 +28,7 @@ export const WorkerProfile: React.FC = () => {
   return (
     <div style={{ maxWidth: 540, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>←</button>
+        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ fontWeight: 700, fontSize: 15 }}>Profil</div>
         <button style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>⋯</button>
       </div>
@@ -53,8 +53,6 @@ export const WorkerProfile: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 14 }}>
-          <div><div style={{ fontWeight: 800, fontSize: 18 }}>{(w.rating || 0).toFixed(1)} <span style={{ color: 'var(--amber)' }}>★</span></div><div style={{ color: 'var(--muted)', fontSize: 11 }}>Reyting</div></div>
-          <div style={{ width: 1, background: 'var(--line)' }} />
           <div><div style={{ fontWeight: 800, fontSize: 18 }}>{w.experience}</div><div style={{ color: 'var(--muted)', fontSize: 11 }}>Tajriba</div></div>
           <div style={{ width: 1, background: 'var(--line)' }} />
           <div><div style={{ fontWeight: 800, fontSize: 18 }}>{w.jobs || 0}</div><div style={{ color: 'var(--muted)', fontSize: 11 }}>Bajarilgan</div></div>
@@ -113,7 +111,7 @@ export const WorkerProfile: React.FC = () => {
         <a href={w.phone ? `tel:${w.phone}` : undefined} style={{ textDecoration: 'none', opacity: w.phone ? 1 : .5, pointerEvents: w.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo‘ng‘iroq</Btn>
         </a>
-        <a href={w.telegram ? `https://t.me/${String(w.telegram).replace(/^@/, '')}` : w.phone ? `https://t.me/+${String(w.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', opacity: (w.telegram || w.phone) ? 1 : .5, pointerEvents: (w.telegram || w.phone) ? 'auto' : 'none' }}>
+        <a href={tgHref(w.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(w.telegram) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

@@ -1,98 +1,68 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Logo } from '../components/Logo';
+import { SectionIcon } from '../components/SectionIcon';
 
-const SECTIONS = [
-  {
-    id: 'romchi-ish',
-    icon: '🔧',
-    title: 'Romchi Ish',
-    sub: 'Termo · PVX · Alyumin ish va ishchi qidirish',
-    color: '#EBF5FF',
-    fg: '#0077FF',
-    path: '/romchi-ish',
-    active: true,
-  },
-  {
-    id: 'atxod',
-    icon: '♻️',
-    title: 'Atxod oluvchilar',
-    sub: 'Alyumin, plastik, temir atxod sotish va sotib olish',
-    color: '#ECFDF5',
-    fg: '#10B981',
-    path: '/atxod',
-    active: true,
-  },
-  {
-    id: 'stanok',
-    icon: '⚙️',
-    title: 'Stanok remont',
-    sub: 'Stanok ta\'mirlash va sozlash ustalari',
-    color: '#FFF7ED',
-    fg: '#F59E0B',
-    path: '/stanok',
-    active: true,
-  },
-  {
-    id: 'usluga',
-    icon: '🛠️',
-    title: 'Uslugachilar',
-    sub: 'Turli xizmatlar va uslugalar',
-    color: '#FDF2F8',
-    fg: '#EC4899',
-    path: '/usluga',
-    active: true,
-  },
+const SECTIONS: {
+  id: string;
+  icon: 'briefcase' | 'recycle' | 'gear' | 'factory' | 'wrench' | 'hardhat' | 'rainbow' | 'truck';
+  title: string;
+  sub: string;
+  path: string;
+}[] = [
+  { id: 'romchi-ish', icon: 'briefcase', title: 'Romchi Ish', sub: "Termo · PVX · Alyumin ish va ishchi qidirish", path: '/romchi-ish' },
+  { id: 'usluga', icon: 'wrench', title: 'Uslugachilar', sub: 'Turli xizmatlar va uslugalar', path: '/usluga' },
+  { id: 'atxod', icon: 'recycle', title: 'Atxod oluvchilar', sub: 'Alyumin, PVX, Termo atxod sotish va sotib olish', path: '/atxod' },
+  { id: 'ustanofka', icon: 'hardhat', title: 'Ustanofka brigada', sub: "Tayyor rom va eshik-derazani o'rnatuvchi brigadalar", path: '/ustanofka' },
+  { id: 'stanok', icon: 'gear', title: 'Stanok remont', sub: "Stanok ta'mirlash va sozlash ustalari", path: '/stanok' },
+  { id: 'arkachilar', icon: 'rainbow', title: 'Arkachilar', sub: 'Profillarni ark shaklida tayyorlovchi ustalar', path: '/arkachilar' },
+  { id: 'stanok-ads', icon: 'factory', title: "Stanok e'lonlari", sub: 'Yangi va ishlatilgan stanoklar oldi-sotdi', path: '/stanok-ads' },
+  { id: 'delivery', icon: 'truck', title: 'Dostavkachilar', sub: 'Yuk tashish va kichik dostavka xizmatlari', path: '/delivery' },
 ];
 
 export const Home: React.FC = () => {
   const nav = useNavigate();
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '20px' }}>
-      <div style={{ maxWidth: 540, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', padding: '20px 0 24px' }}>
-          <img src="/images/logo.png" alt="Romchi" style={{ height: 100, margin: '0 auto', display: 'block', objectFit: 'contain' }} />
-          <h1 style={{ fontSize: 24, fontWeight: 800, margin: '12px 0 4px', color: 'var(--ink)' }}>Xush kelibsiz!</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>Kerakli bo'limni tanlang</p>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '32px 16px 80px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', padding: '12px 0 8px' }}>
+          <Logo size={36} />
+          <h1 style={{ fontSize: 28, fontWeight: 800, margin: '14px 0 0', color: 'var(--ink)', letterSpacing: '-0.02em' }}>Xush kelibsiz!</h1>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: 14, marginTop: 28,
+        }}>
           {SECTIONS.map(s => (
             <button
               key={s.id}
-              onClick={() => s.active ? nav(s.path) : null}
+              onClick={() => nav(s.path)}
               style={{
-                display: 'flex', alignItems: 'center', gap: 14, padding: 18,
+                display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px',
                 background: '#fff', border: '1px solid var(--line)', borderRadius: 18,
-                cursor: s.active ? 'pointer' : 'default', textAlign: 'left', width: '100%',
-                opacity: s.active ? 1 : 0.6, position: 'relative',
+                cursor: 'pointer', textAlign: 'left', width: '100%',
+                boxShadow: '0 1px 2px rgba(15,23,42,.04)',
+                transition: 'transform .1s, box-shadow .15s',
               }}
+              onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(15,23,42,.06)')}
+              onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 2px rgba(15,23,42,.04)')}
             >
               <div style={{
-                width: 52, height: 52, borderRadius: 14, background: s.color,
-                display: 'grid', placeItems: 'center', fontSize: 26, flexShrink: 0,
+                width: 96, height: 96, borderRadius: 18,
+                background: '#EEF1F5', display: 'grid', placeItems: 'center', flexShrink: 0,
               }}>
-                {s.icon}
+                <SectionIcon name={s.icon} size={80} color="#1F2937" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>{s.title}</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{s.title}</div>
                 <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{s.sub}</div>
               </div>
-              {s.active ? (
-                <div style={{ fontSize: 20, color: s.fg, flexShrink: 0 }}>→</div>
-              ) : (
-                <span style={{
-                  fontSize: 10, fontWeight: 700, padding: '4px 8px', borderRadius: 8,
-                  background: 'var(--bg)', color: 'var(--muted)', flexShrink: 0,
-                }}>Tez kunda</span>
-              )}
+              <span style={{ color: '#9CA3AF', fontSize: 18, flexShrink: 0 }}>›</span>
             </button>
           ))}
         </div>
-
-        <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: 11, marginTop: 24 }}>
-          Romchi Service © 2026
-        </p>
       </div>
     </div>
   );

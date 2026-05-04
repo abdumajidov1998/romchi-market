@@ -16,6 +16,7 @@ export const PhoneVerify: React.FC<{
   const [error, setError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [countdown, setCountdown] = React.useState(0);
+  const [devCode, setDevCode] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (countdown <= 0) return;
@@ -31,7 +32,8 @@ export const PhoneVerify: React.FC<{
     }
     setLoading(true);
     try {
-      await api.sendCode(cleanPhone);
+      const r = await api.sendCode(cleanPhone);
+      setDevCode(r.devCode || null);
       setStep('code');
       setCountdown(60);
     } catch (e: any) {
@@ -103,6 +105,11 @@ export const PhoneVerify: React.FC<{
           <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 4 }}>
             <b>{phone}</b> raqamiga 4 raqamli kod yuborildi
           </div>
+          {devCode && process.env.NODE_ENV === 'development' && (
+            <div style={{ background: '#FEF3C7', border: '1px solid #F59E0B', color: '#92400E', borderRadius: 10, padding: '10px 12px', fontSize: 13, marginTop: 8, marginBottom: 4 }}>
+              🧪 Test rejimi: kod <b style={{ fontSize: 16, letterSpacing: 2 }}>{devCode}</b>
+            </div>
+          )}
           <input
             type="hidden"
             autoComplete="one-time-code"

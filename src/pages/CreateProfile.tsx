@@ -6,9 +6,9 @@ import { SpecIcon } from '../SpecIcon';
 import { api, auth } from '../api';
 import { MapPicker } from '../components/MapPicker';
 import { PhoneVerify } from '../components/PhoneVerify';
+import { WORKER_SPECS as SPECS, OYNACHI_SUBSPECS } from '../constants';
 
 
-const SPECS = ['Termo', 'PVX', 'Alyumin'];
 const RED = '#DC2626';
 const RED_50 = '#FEE2E2';
 
@@ -20,6 +20,7 @@ export const CreateProfile: React.FC = () => {
   const [district, setDistrict] = React.useState('');
   const [specs, setSpecs] = React.useState<string[]>([]);
   const [exp, setExp] = React.useState<string>('');
+  const [workType, setWorkType] = React.useState<string>('');
   const [about, setAbout] = React.useState('');
   const [salaryFrom, setSalaryFrom] = React.useState('');
   const [salaryTo, setSalaryTo] = React.useState('');
@@ -28,9 +29,37 @@ export const CreateProfile: React.FC = () => {
   const [attempted, setAttempted] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [isEdit, setIsEdit] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!auth.token()) return;
+    api.myProfiles().then(p => {
+      const w = p?.worker;
+      if (!w) return;
+      setIsEdit(true);
+      setName(w.name || '');
+      setCity(w.city || '');
+      setDistrict(w.district || '');
+      setSpecs(Array.isArray(w.specs) ? w.specs : []);
+      setExp(w.experience || '');
+      setWorkType(w.work_type || w.workType || '');
+      setAbout(w.about || '');
+      setSalaryFrom(w.salary_from || w.salaryFrom ? String(w.salary_from || w.salaryFrom) : '');
+      setSalaryTo(w.salary_to || w.salaryTo ? String(w.salary_to || w.salaryTo) : '');
+      setTelegram(w.telegram || '');
+      if (w.lat != null && w.lng != null) setCoords({ lat: Number(w.lat), lng: Number(w.lng) });
+    }).catch(() => {});
+  }, []);
 
   const toggle = (s: string) =>
-    setSpecs(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
+    setSpecs(p => {
+      const next = p.includes(s) ? p.filter(x => x !== s) : [...p, s];
+      // When Oynachi is deselected, also clear its sub-specs from the array
+      if (s === 'Oynachi' && p.includes(s)) {
+        return next.filter(x => !(OYNACHI_SUBSPECS as readonly string[]).includes(x));
+      }
+      return next;
+    });
 
   const pickCity = (c: string) => { setCity(c); setDistrict(''); };
 
@@ -82,6 +111,7 @@ export const CreateProfile: React.FC = () => {
         salaryFrom: salaryFrom ? Number(salaryFrom.replace(/\D/g, '')) : undefined,
         salaryTo: salaryTo ? Number(salaryTo.replace(/\D/g, '')) : undefined,
         telegram: telegram.trim() || undefined,
+        workType: workType || undefined,
       });
       nav('/jobs');
     } catch (e: any) {
@@ -92,8 +122,8 @@ export const CreateProfile: React.FC = () => {
   return (
     <div style={{ maxWidth: 540, margin: '0 auto', paddingBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav(-1)} style={{ width: 40, height: 40, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 18 }}>←</button>
-        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--muted)' }}>Ishchi profili</div>
+        <button onClick={() => nav(-1)} style={{ width: 40, height: 40, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 18 }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
+        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--muted)' }}>{isEdit ? 'Ishchi profilini tahrirlash' : 'Ishchi profili'}</div>
         <div style={{ width: 40 }} />
       </div>
 
@@ -165,29 +195,51 @@ export const CreateProfile: React.FC = () => {
 
       <SectionTitle n={5} title="Qanday ishlar qo'lingizdan keladi?" hint="Bir nechtasini tanlashingiz mumkin" />
       <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10,
+        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8,
         ...(showErr(5) ? { padding: 10, borderRadius: 16, border: `1.5px dashed ${RED}`, background: RED_50 } : {}),
       }}>
         {SPECS.map(s => {
           const on = specs.includes(s);
           return (
-            <button key={s} onClick={() => toggle(s)} style={{
-              padding: '18px 8px', borderRadius: 16, cursor: 'pointer',
+            <button key={s} type="button" onClick={() => toggle(s)} style={{
+              padding: '14px 4px', borderRadius: 16, cursor: 'pointer',
               background: on ? 'var(--blue-50)' : '#fff',
               border: `1.5px solid ${on ? 'var(--blue)' : 'var(--line)'}`,
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
               position: 'relative',
             }}>
-              <SpecIcon name={s} />
-              <div style={{ fontWeight: 700, fontSize: 14, color: on ? 'var(--blue)' : 'var(--ink)' }}>{s}</div>
+              <SpecIcon name={s} size={48} />
+              <div style={{ fontWeight: 700, fontSize: 12, color: on ? 'var(--blue)' : 'var(--ink)', textAlign: 'center' }}>{s}</div>
               {on && <div style={{
-                position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 999,
-                background: 'var(--blue)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 700,
+                position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 999,
+                background: 'var(--blue)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 700,
               }}>✓</div>}
             </button>
           );
         })}
       </div>
+      {specs.includes('Oynachi') && (
+        <div style={{ marginTop: 10, padding: 12, background: 'var(--blue-50)', borderRadius: 14 }}>
+          <div style={{ fontSize: 12, color: 'var(--blue)', fontWeight: 700, marginBottom: 8 }}>🪟 Oynachi yo'nalishlari (bir nechtasini tanlang):</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {OYNACHI_SUBSPECS.map(s => {
+              const on = specs.includes(s);
+              return (
+                <button key={s} type="button" onClick={() => toggle(s)} style={{
+                  padding: '10px 6px', borderRadius: 12, cursor: 'pointer',
+                  background: on ? '#fff' : 'transparent',
+                  border: `1.5px solid ${on ? 'var(--blue)' : 'var(--line)'}`,
+                  fontSize: 12, fontWeight: 600, color: on ? 'var(--blue)' : 'var(--ink)', textAlign: 'center',
+                  position: 'relative',
+                }}>
+                  {s}
+                  {on && <span style={{ marginLeft: 6, color: 'var(--blue)' }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <SectionTitle n={6} title="Tajribangiz qancha?" />
       <div style={{
@@ -195,11 +247,37 @@ export const CreateProfile: React.FC = () => {
         ...(showErr(6) ? { padding: 10, borderRadius: 14, border: `1.5px dashed ${RED}`, background: RED_50 } : {}),
       }}>
         {['1 yildan kam', '1–3 yil', '3–5 yil', '5+ yil'].map(e => (
-          <button key={e} onClick={() => setExp(e)} style={{
+          <button key={e} type="button" onClick={() => setExp(e)} style={{
             padding: '14px 6px', borderRadius: 12, cursor: 'pointer', fontSize: 13, fontWeight: 600,
             background: exp === e ? 'var(--blue)' : '#fff', color: exp === e ? '#fff' : 'var(--ink-2)',
             border: `1px solid ${exp === e ? 'var(--blue)' : 'var(--line)'}`,
           }}>{e}</button>
+        ))}
+      </div>
+
+      <div style={{ margin: '22px 0 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 26, height: 26, borderRadius: 999, background: workType ? 'var(--green)' : 'var(--muted)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 700, fontSize: 13 }}>
+            {workType ? '✓' : '⏰'}
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 17 }}>Ish rejimi</div>
+          <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600, background: 'var(--bg)', padding: '3px 8px', borderRadius: 8 }}>Ixtiyoriy</span>
+        </div>
+        <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 4, marginLeft: 36 }}>
+          Qanday rejimda ishlay olasiz?
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {[
+          { v: 'Full-time', label: "To'liq stavka" },
+          { v: 'Part-time', label: 'Yarim stavka' },
+          { v: 'Project', label: 'Loyiha' },
+        ].map(o => (
+          <button key={o.v} type="button" onClick={() => setWorkType(workType === o.v ? '' : o.v)} style={{
+            padding: '12px 6px', borderRadius: 12, cursor: 'pointer', fontSize: 13, fontWeight: 600,
+            background: workType === o.v ? 'var(--blue)' : '#fff', color: workType === o.v ? '#fff' : 'var(--ink-2)',
+            border: `1px solid ${workType === o.v ? 'var(--blue)' : 'var(--line)'}`,
+          }}>{o.label}</button>
         ))}
       </div>
 

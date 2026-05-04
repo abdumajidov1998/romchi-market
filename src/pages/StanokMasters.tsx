@@ -1,10 +1,15 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Card, Btn, Badge, Chip, EmptyState, TelegramIcon } from '../ui';
+import { Card, Btn, Badge, Chip, EmptyState, TelegramIcon, tgHref } from '../ui';
+import { usePersistedState } from '../persist';
 import { useIsDesktop } from '../Layout';
 import { api } from '../api';
+import { STANOK_SPECS as SPECS } from '../constants';
+import { StanokSpecIcon } from '../StanokSpecIcon';
+import { getSavedCoords, requestCoords } from '../userLocation';
+import { LocationPickerModal } from '../components/LocationPickerModal';
+import { SectionIcon } from '../components/SectionIcon';
 
-const SPECS = ['Kesish stanogi', 'Payvandlash stanogi', 'Pressovka stanogi', 'Frezerlash stanogi', 'Kompressor', 'Arra chaxlovchi'];
 const RADII = [5, 10, 15, 25, 50];
 const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '---';
 
@@ -15,11 +20,6 @@ const haversine = (a: { lat: number; lng: number }, b: { lat: number; lng: numbe
   const dLng = toRad(b.lng - a.lng);
   const s = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(s));
-};
-
-const SPEC_ICONS: Record<string, string> = {
-  'Kesish stanogi': '🔪', 'Payvandlash stanogi': '⚡', 'Pressovka stanogi': '🏗',
-  'Frezerlash stanogi': '⚙️', 'Kompressor': '💨', 'Arra chaxlovchi': '🪚',
 };
 
 const MasterCard: React.FC<{ m: any }> = ({ m }) => (
@@ -41,17 +41,25 @@ const MasterCard: React.FC<{ m: any }> = ({ m }) => (
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         {(m.specs || []).map((s: string) => (
-          <span key={s} style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: 'var(--blue-50)', color: 'var(--blue)' }}>
-            {SPEC_ICONS[s] || '🔧'} {s}
+          <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: 'var(--blue-50)', color: 'var(--blue)' }}>
+            <StanokSpecIcon name={s} size={14} /> {s}
           </span>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-        <div style={{ padding: '6px 10px', background: '#ECFDF5', borderRadius: 8, fontSize: 13 }}>
-          <span style={{ color: 'var(--muted)', fontSize: 11 }}>Diagnostika: </span>
-          <b style={{ color: '#10B981' }}>{m.priceDiagnostika ? `${fmt(m.priceDiagnostika)} so'm` : 'Kelishiladi'}</b>
-        </div>
+      <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+        {(m.specs || []).some((s: string) => s !== 'Arra chaxlovchi') && (
+          <div style={{ padding: '6px 10px', background: '#ECFDF5', borderRadius: 8, fontSize: 13 }}>
+            <span style={{ color: 'var(--muted)', fontSize: 11 }}>Diagnostika: </span>
+            <b style={{ color: '#10B981' }}>{m.priceDiagnostika ? `${fmt(m.priceDiagnostika)} so'm` : 'Kelishiladi'}</b>
+          </div>
+        )}
+        {(m.specs || []).includes('Arra chaxlovchi') && (
+          <div style={{ padding: '6px 10px', background: '#FEF3C7', borderRadius: 8, fontSize: 13 }}>
+            <span style={{ color: 'var(--muted)', fontSize: 11 }}>Charxlash: </span>
+            <b style={{ color: '#D97706' }}>{m.priceCharxlash ? `${fmt(m.priceCharxlash)} so'm` : 'Kelishiladi'}</b>
+          </div>
+        )}
         <div style={{ padding: '6px 10px', background: 'var(--bg)', borderRadius: 8, fontSize: 13 }}>
           <span style={{ color: 'var(--muted)', fontSize: 11 }}>Remont: </span>
           <b style={{ color: 'var(--ink)' }}>Kelishiladi</b>
@@ -64,7 +72,7 @@ const MasterCard: React.FC<{ m: any }> = ({ m }) => (
       <a href={m.phone ? `tel:${m.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: m.phone ? 1 : .5, pointerEvents: m.phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
       </a>
-      <a href={m.telegram ? `https://t.me/${m.telegram}` : m.phone ? `https://t.me/+${String(m.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', opacity: (m.telegram || m.phone) ? 1 : .5, pointerEvents: (m.telegram || m.phone) ? 'auto' : 'none' }}>
+      <a href={tgHref(m.telegram)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(m.telegram) ? undefined : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
       </a>
     </div>
@@ -74,29 +82,31 @@ const MasterCard: React.FC<{ m: any }> = ({ m }) => (
 export const StanokMasters: React.FC = () => {
   const desktop = useIsDesktop();
   const nav = useNavigate();
-  const [q, setQ] = React.useState('');
-  const [selectedSpecs, setSelectedSpecs] = React.useState<string[]>([]);
+  const [selectedSpecs, setSelectedSpecs] = usePersistedState<string[]>('filters:stanok:specs', []);
   const [specOpen, setSpecOpen] = React.useState(false);
-  const [urgentOnly, setUrgentOnly] = React.useState(false);
+  const [urgentOnly, setUrgentOnly] = usePersistedState('filters:stanok:urgentOnly', false);
   const [list, setList] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
-  const [nearbyOn, setNearbyOn] = React.useState(false);
-  const [radiusKm, setRadiusKm] = React.useState(15);
-  const [myCoords, setMyCoords] = React.useState<{ lat: number; lng: number } | null>(null);
+  const [nearbyOn, setNearbyOn] = usePersistedState('filters:stanok:nearbyOn', false);
+  const [radiusKm, setRadiusKm] = usePersistedState('filters:stanok:radiusKm', 15);
+  const [myCoords, setMyCoords] = React.useState<{ lat: number; lng: number } | null>(getSavedCoords());
   const [geoBusy, setGeoBusy] = React.useState(false);
-  const [geoError, setGeoError] = React.useState('');
+  const [pickerOpen, setPickerOpen] = React.useState(false);
 
-  const enableNearby = () => {
+  const enableNearby = async () => {
     if (nearbyOn) { setNearbyOn(false); return; }
-    setGeoError('');
-    if (!navigator.geolocation) { setGeoError('Lokatsiyani qo\'llab-quvvatlamaydi'); return; }
+    if (myCoords) { setNearbyOn(true); return; }
     setGeoBusy(true);
-    navigator.geolocation.getCurrentPosition(
-      pos => { setMyCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setNearbyOn(true); setGeoBusy(false); },
-      err => { setGeoError(err.code === 1 ? 'Ruxsat bermadingiz' : 'Aniqlab bo\'lmadi'); setGeoBusy(false); },
-      { enableHighAccuracy: true, timeout: 15000 },
-    );
+    try {
+      const c = await requestCoords();
+      setMyCoords(c);
+      setNearbyOn(true);
+    } catch {
+      setPickerOpen(true);
+    } finally {
+      setGeoBusy(false);
+    }
   };
 
   const toggleSpec = (s: string) => setSelectedSpecs(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
@@ -104,12 +114,12 @@ export const StanokMasters: React.FC = () => {
   React.useEffect(() => {
     let ok = true;
     setLoading(true);
-    api.stanokMasters({ q: q || undefined })
+    api.stanokMasters({})
       .then(d => { if (ok) { setList(d); setError(''); } })
       .catch(e => ok && setError(e.message))
       .finally(() => { if (ok) setLoading(false); });
     return () => { ok = false; };
-  }, [q]);
+  }, []);
 
   const filtered = React.useMemo(() => {
     let result = list;
@@ -127,16 +137,14 @@ export const StanokMasters: React.FC = () => {
   const Header = (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
+        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ textAlign: 'center', flex: 1 }}>
-          <div style={{ fontSize: 12, color: 'var(--muted)' }}>⚙️ Stanok xizmati</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+            <SectionIcon name="gear" size={14} /> Stanok xizmati
+          </div>
           <div style={{ fontWeight: 800, fontSize: desktop ? 26 : 20 }}>Stanok remont</div>
         </div>
-        <button onClick={() => nav('/stanok/create')} style={{ width: 38, height: 38, borderRadius: 12, background: 'var(--blue)', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer', fontWeight: 700 }}>+</button>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: '12px 14px', marginBottom: 12 }}>
-        <span style={{ color: 'var(--muted)' }}>🔍</span>
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Usta yoki xizmat qidirish..." style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, background: 'transparent' }} />
+        <div style={{ width: 38 }} />
       </div>
       <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, alignItems: 'center' }}>
         <Chip on={nearbyOn} onClick={enableNearby}>{geoBusy ? '⏳...' : '📍 Yaqin atrofdagilar'}</Chip>
@@ -151,7 +159,11 @@ export const StanokMasters: React.FC = () => {
           {RADII.map(r => <Chip key={r} on={radiusKm === r} onClick={() => setRadiusKm(r)}>{r} km</Chip>)}
         </div>
       )}
-      {geoError && <div style={{ marginBottom: 8, padding: 10, background: '#FEE2E2', color: '#DC2626', borderRadius: 12, fontSize: 12, fontWeight: 500 }}>⚠️ {geoError}</div>}
+      <LocationPickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onPicked={c => { setMyCoords(c); setNearbyOn(true); }}
+      />
       {specOpen && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
           {SPECS.map(s => {
@@ -164,7 +176,7 @@ export const StanokMasters: React.FC = () => {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                 position: 'relative',
               }}>
-                <span style={{ fontSize: 22 }}>{SPEC_ICONS[s] || '🔧'}</span>
+                <StanokSpecIcon name={s} size={28} color={on ? 'var(--blue)' : 'var(--ink)'} />
                 <div style={{ fontWeight: 700, fontSize: 10, color: on ? 'var(--blue)' : 'var(--ink)', textAlign: 'center' }}>{s}</div>
                 {on && <div style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, borderRadius: 999, background: 'var(--blue)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700 }}>✓</div>}
               </button>

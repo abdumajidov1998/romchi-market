@@ -1,15 +1,10 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Badge, Btn, Card, EmptyState, TelegramIcon } from '../ui';
+import { Avatar, Badge, Btn, Card, EmptyState, TelegramIcon, tgHref } from '../ui';
 import { api } from '../api';
 import { SpecIcon } from '../SpecIcon';
 
-const MATERIALS = [
-  { key: 'priceTermo', label: 'Termo', spec: 'Termo' },
-  { key: 'pricePvxOq', label: 'PVX Oq', spec: 'PVX Oq' },
-  { key: 'pricePvxRangli', label: 'PVX Rangli', spec: 'PVX' },
-  { key: 'priceAlyumin', label: 'Alyumin', spec: 'Alyumin' },
-];
+import { WASTE_MATERIALS as MATERIALS } from '../constants';
 
 const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '—';
 const initials = (n: string) => (n || '?').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
@@ -36,7 +31,7 @@ export const WasteBuyerProfile: React.FC = () => {
   return (
     <div style={{ maxWidth: 540, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>←</button>
+        <button onClick={() => nav(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ fontWeight: 700, fontSize: 15 }}>Atxod oluvchi</div>
         <div style={{ width: 38 }} />
       </div>
@@ -99,7 +94,7 @@ export const WasteBuyerProfile: React.FC = () => {
         <a href={b.phone ? `tel:${b.phone}` : undefined} style={{ textDecoration: 'none', opacity: b.phone ? 1 : .5, pointerEvents: b.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo'ng'iroq</Btn>
         </a>
-        <a href={b.telegram ? `https://t.me/${b.telegram}` : b.phone ? `https://t.me/+${String(b.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', opacity: (b.telegram || b.phone) ? 1 : .5, pointerEvents: (b.telegram || b.phone) ? 'auto' : 'none' }}>
+        <a href={tgHref(b.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(b.telegram) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

@@ -133,7 +133,7 @@ export const regions: Record<string, string[]> = {
   'Qoraqalpog‘iston': ['Amudaryo', 'Beruniy', 'Chimboy', 'Ellikqala', 'Kegeyli', 'Mo‘ynoq', 'Nukus', 'Qonliko‘l', 'Qorao‘zak', 'Qo‘ng‘irot', 'Shumanay', 'Taxiatosh', 'Taxtako‘pir', 'To‘rtko‘l', 'Xo‘jayli'],
 };
 export const cities = Object.keys(regions);
-export const allSpecs = ['Termo', 'PVX', 'Alyumin'];
+export { WORKER_SPECS as allSpecs } from './constants';
 
 export type Sex = {
   id: string;

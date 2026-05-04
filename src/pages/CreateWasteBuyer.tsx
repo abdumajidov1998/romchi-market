@@ -4,6 +4,9 @@ import { Btn, Input, Field } from '../ui';
 import { cities, regions } from '../data';
 import { api, auth } from '../api';
 import { MapPicker } from '../components/MapPicker';
+import { SpecIcon } from '../SpecIcon';
+import { WASTE_MATERIALS as MATERIALS } from '../constants';
+import { SectionIcon } from '../components/SectionIcon';
 
 export const CreateWasteBuyer: React.FC = () => {
   const nav = useNavigate();
@@ -17,10 +20,45 @@ export const CreateWasteBuyer: React.FC = () => {
   const [pricePvxOq, setPricePvxOq] = React.useState('');
   const [pricePvxRangli, setPricePvxRangli] = React.useState('');
   const [priceAlyumin, setPriceAlyumin] = React.useState('');
+  const [priceAlikabond, setPriceAlikabond] = React.useState('');
+  const [selectedMaterials, setSelectedMaterials] = React.useState<string[]>([]);
+  const toggleMat = (k: string) => setSelectedMaterials(p => p.includes(k) ? p.filter(x => x !== k) : [...p, k]);
+  const PRICE_SETTERS: Record<string, React.Dispatch<React.SetStateAction<string>>> = {
+    priceTermo: setPriceTermo,
+    pricePvxOq: setPricePvxOq,
+    pricePvxRangli: setPricePvxRangli,
+    priceAlyumin: setPriceAlyumin,
+    priceAlikabond: setPriceAlikabond,
+  };
+  const PRICE_VALUES: Record<string, string> = { priceTermo, pricePvxOq, pricePvxRangli, priceAlyumin, priceAlikabond };
+  const PRICE_PLACEHOLDERS: Record<string, string> = { priceTermo: '4 000', pricePvxOq: '10 000', pricePvxRangli: '5 000', priceAlyumin: '10 000', priceAlikabond: '8 000' };
   const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(null);
   const [telegram, setTelegram] = React.useState('');
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [isEdit, setIsEdit] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!auth.token()) return;
+    api.myProfiles().then(p => {
+      const w = p?.wasteBuyer;
+      if (!w) return;
+      setIsEdit(true);
+      setName(w.name || '');
+      setCity(w.city || 'Toshkent');
+      setDistrict(w.district || '');
+      setAbout(w.about || '');
+      const mats: string[] = [];
+      if (w.priceTermo)      { setPriceTermo(String(w.priceTermo));         mats.push('priceTermo'); }
+      if (w.pricePvxOq)      { setPricePvxOq(String(w.pricePvxOq));         mats.push('pricePvxOq'); }
+      if (w.pricePvxRangli)  { setPricePvxRangli(String(w.pricePvxRangli)); mats.push('pricePvxRangli'); }
+      if (w.priceAlyumin)    { setPriceAlyumin(String(w.priceAlyumin));     mats.push('priceAlyumin'); }
+      if (w.priceAlikabond)  { setPriceAlikabond(String(w.priceAlikabond)); mats.push('priceAlikabond'); }
+      setSelectedMaterials(mats);
+      setTelegram(w.telegram || '');
+      if (w.lat != null && w.lng != null) setCoords({ lat: Number(w.lat), lng: Number(w.lng) });
+    }).catch(() => {});
+  }, []);
 
   const isAuthed = !!auth.token();
 
@@ -51,7 +89,10 @@ export const CreateWasteBuyer: React.FC = () => {
     if (!name.trim() || !district) {
       setError('Ism va tumanni to\'ldiring'); return;
     }
-    if (!priceTermo && !pricePvxOq && !pricePvxRangli && !priceAlyumin) {
+    if (selectedMaterials.length === 0) {
+      setError('Kamida bitta material turini tanlang'); return;
+    }
+    if (!priceTermo && !pricePvxOq && !pricePvxRangli && !priceAlyumin && !priceAlikabond) {
       setError('Kamida bitta material narxini kiriting'); return;
     }
     if (!coords) {
@@ -67,6 +108,7 @@ export const CreateWasteBuyer: React.FC = () => {
         pricePvxOq: pricePvxOq ? Number(pricePvxOq.replace(/\D/g, '')) : 0,
         pricePvxRangli: pricePvxRangli ? Number(pricePvxRangli.replace(/\D/g, '')) : 0,
         priceAlyumin: priceAlyumin ? Number(priceAlyumin.replace(/\D/g, '')) : 0,
+        priceAlikabond: priceAlikabond ? Number(priceAlikabond.replace(/\D/g, '')) : 0,
         lat: coords?.lat, lng: coords?.lng,
         telegram: telegram.trim() || undefined,
       });
@@ -81,12 +123,14 @@ export const CreateWasteBuyer: React.FC = () => {
   return (
     <form onSubmit={submit} style={{ maxWidth: 540, margin: '0 auto', paddingBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button type="button" onClick={() => nav('/atxod')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
-        <div style={{ fontWeight: 700, fontSize: 15 }}>Atxod oluvchi profili</div>
+        <button type="button" onClick={() => nav('/atxod')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>{isEdit ? 'Profilni tahrirlash' : 'Atxod oluvchi profili'}</div>
         <div style={{ width: 38 }} />
       </div>
 
-      <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15 }}>♻️ Atxod oluvchi bo'ling</div>
+      <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <SectionIcon name="recycle" size={26} /> Atxod oluvchi bo'ling
+      </div>
       <p style={{ color: 'var(--muted)', margin: '6px 0 16px', fontSize: 14 }}>Narxlaringizni belgilang — sotuvchilar sizni topishadi</p>
 
       {!isAuthed && (
@@ -103,21 +147,38 @@ export const CreateWasteBuyer: React.FC = () => {
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="Masalan: Alisher Atxodchi" />
       </Field>
 
-      <div style={{ fontWeight: 700, fontSize: 16, margin: '18px 0 10px' }}>Olinadigan narxlar (1 kg uchun, so'm)</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/pvx.png" alt="" style={{ width: 20, height: 20 }} /> Termo</span>}>
-          <Input value={priceTermo} onChange={e => setPriceTermo(e.target.value)} placeholder="4 000" inputMode="numeric" />
-        </Field>
-        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/termo.png" alt="" style={{ width: 20, height: 20, filter: 'invert(1) brightness(1.8) contrast(0.6) saturate(0)' }} /> PVX Oq</span>}>
-          <Input value={pricePvxOq} onChange={e => setPricePvxOq(e.target.value)} placeholder="10 000" inputMode="numeric" />
-        </Field>
-        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/termo.png" alt="" style={{ width: 20, height: 20 }} /> PVX Rangli</span>}>
-          <Input value={pricePvxRangli} onChange={e => setPricePvxRangli(e.target.value)} placeholder="5 000" inputMode="numeric" />
-        </Field>
-        <Field label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><img src="/images/alyumin.png" alt="" style={{ width: 20, height: 20 }} /> Alyumin</span>}>
-          <Input value={priceAlyumin} onChange={e => setPriceAlyumin(e.target.value)} placeholder="10 000" inputMode="numeric" />
-        </Field>
+      <div style={{ fontWeight: 700, fontSize: 16, margin: '18px 0 10px' }}>Qaysi materiallarni qabul qilasiz?</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
+        {MATERIALS.map(m => {
+          const on = selectedMaterials.includes(m.key);
+          return (
+            <button key={m.key} type="button" onClick={() => toggleMat(m.key)} style={{
+              padding: '12px 4px', borderRadius: 14, cursor: 'pointer',
+              background: on ? 'var(--blue-50)' : '#fff',
+              border: `1.5px solid ${on ? 'var(--blue)' : 'var(--line)'}`,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+              position: 'relative',
+            }}>
+              <SpecIcon name={m.spec} size={32} />
+              <div style={{ fontWeight: 700, fontSize: 11, color: on ? 'var(--blue)' : 'var(--ink)', textAlign: 'center' }}>{m.label}</div>
+              {on && <div style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, borderRadius: 999, background: 'var(--blue)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700 }}>✓</div>}
+            </button>
+          );
+        })}
       </div>
+
+      {selectedMaterials.length > 0 && (
+        <>
+          <div style={{ fontWeight: 700, fontSize: 16, margin: '6px 0 10px' }}>Olinadigan narxlar (1 kg uchun, so'm)</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {MATERIALS.filter(m => selectedMaterials.includes(m.key)).map(m => (
+              <Field key={m.key} label={<span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><SpecIcon name={m.spec} size={20} /> {m.label}</span>}>
+                <Input value={PRICE_VALUES[m.key]} onChange={e => PRICE_SETTERS[m.key](e.target.value)} placeholder={PRICE_PLACEHOLDERS[m.key]} inputMode="numeric" />
+              </Field>
+            ))}
+          </div>
+        </>
+      )}
 
       <Field label="Viloyat">
         <select value={city} onChange={e => pickCity(e.target.value)} style={{ width: '100%', border: '1px solid var(--line)', background: '#fff', borderRadius: 14, padding: '13px 14px', fontSize: 15 }}>

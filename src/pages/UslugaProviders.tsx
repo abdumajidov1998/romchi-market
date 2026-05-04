@@ -1,11 +1,15 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Card, Btn, Badge, Chip, EmptyState, TelegramIcon } from '../ui';
+import { Card, Btn, Badge, Chip, EmptyState, TelegramIcon, tgHref } from '../ui';
+import { usePersistedState } from '../persist';
 import { useIsDesktop } from '../Layout';
 import { api } from '../api';
 import { SpecIcon } from '../SpecIcon';
+import { USLUGA_SPECS as SPECS } from '../constants';
+import { getSavedCoords, requestCoords } from '../userLocation';
+import { LocationPickerModal } from '../components/LocationPickerModal';
+import { SectionIcon } from '../components/SectionIcon';
 
-const SPECS = ['Termo', 'PVX', 'Alyumin', 'Surma'];
 const RADII = [5, 10, 15, 25, 50];
 
 const haversine = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
@@ -74,7 +78,7 @@ const ProviderCard: React.FC<{ p: any }> = ({ p }) => (
       <a href={p.phone ? `tel:${p.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: p.phone ? 1 : .5, pointerEvents: p.phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
       </a>
-      <a href={p.telegram ? `https://t.me/${p.telegram}` : p.phone ? `https://t.me/+${String(p.phone).replace(/\D/g, '')}` : undefined} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', opacity: (p.telegram || p.phone) ? 1 : .5, pointerEvents: (p.telegram || p.phone) ? 'auto' : 'none' }}>
+      <a href={tgHref(p.telegram)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(p.telegram) ? undefined : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
       </a>
     </div>
@@ -84,46 +88,41 @@ const ProviderCard: React.FC<{ p: any }> = ({ p }) => (
 export const UslugaProviders: React.FC = () => {
   const desktop = useIsDesktop();
   const nav = useNavigate();
-  const [q, setQ] = React.useState('');
-  const [specs, setSpecs] = React.useState<string[]>([]);
+  const [specs, setSpecs] = usePersistedState<string[]>('filters:usluga:specs', []);
   const [list, setList] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
-  const [nearbyOn, setNearbyOn] = React.useState(false);
-  const [radiusKm, setRadiusKm] = React.useState<number>(15);
-  const [myCoords, setMyCoords] = React.useState<{ lat: number; lng: number } | null>(null);
+  const [nearbyOn, setNearbyOn] = usePersistedState('filters:usluga:nearbyOn', false);
+  const [radiusKm, setRadiusKm] = usePersistedState<number>('filters:usluga:radiusKm', 15);
+  const [myCoords, setMyCoords] = React.useState<{ lat: number; lng: number } | null>(getSavedCoords());
   const [geoBusy, setGeoBusy] = React.useState(false);
-  const [geoError, setGeoError] = React.useState('');
   const [specOpen, setSpecOpen] = React.useState(false);
+  const [pickerOpen, setPickerOpen] = React.useState(false);
 
-  const enableNearby = () => {
+  const enableNearby = async () => {
     if (nearbyOn) { setNearbyOn(false); return; }
-    setGeoError('');
-    if (!navigator.geolocation) { setGeoError('Brauzeringiz lokatsiyani qo\'llab-quvvatlamaydi'); return; }
+    if (myCoords) { setNearbyOn(true); return; }
     setGeoBusy(true);
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        setMyCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setNearbyOn(true);
-        setGeoBusy(false);
-      },
-      err => {
-        setGeoError(err.code === 1 ? 'Lokatsiyaga ruxsat bermadingiz' : 'Lokatsiyani aniqlab bo\'lmadi');
-        setGeoBusy(false);
-      },
-      { enableHighAccuracy: true, timeout: 15000 },
-    );
+    try {
+      const c = await requestCoords();
+      setMyCoords(c);
+      setNearbyOn(true);
+    } catch {
+      setPickerOpen(true);
+    } finally {
+      setGeoBusy(false);
+    }
   };
 
   React.useEffect(() => {
     let ok = true;
     setLoading(true);
-    api.uslugaProviders({ q: q || undefined })
+    api.uslugaProviders()
       .then(d => { if (ok) { setList(d); setError(''); } })
       .catch(e => ok && setError(e.message))
       .finally(() => { if (ok) setLoading(false); });
     return () => { ok = false; };
-  }, [q]);
+  }, []);
 
   const toggleSpec = (s: string) => setSpecs(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
@@ -148,16 +147,14 @@ export const UslugaProviders: React.FC = () => {
   const Header = (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}>←</button>
+        <button onClick={() => nav('/')} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 16, cursor: 'pointer' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ textAlign: 'center', flex: 1 }}>
-          <div style={{ fontSize: 12, color: 'var(--muted)' }}>🛠️ Xizmatlar</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+            <SectionIcon name="wrench" size={14} /> Xizmatlar
+          </div>
           <div style={{ fontWeight: 800, fontSize: desktop ? 26 : 20 }}>Uslugachilar</div>
         </div>
-        <button onClick={() => nav('/usluga/create')} style={{ width: 38, height: 38, borderRadius: 12, background: 'var(--blue)', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer', fontWeight: 700 }}>+</button>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: '12px 14px', marginBottom: 12 }}>
-        <span style={{ color: 'var(--muted)' }}>🔍</span>
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Sex yoki ustaxona qidirish…" style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, background: 'transparent' }} />
+        <div style={{ width: 38 }} />
       </div>
       <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, alignItems: 'center' }}>
         <Chip on={nearbyOn} onClick={enableNearby}>
@@ -175,7 +172,11 @@ export const UslugaProviders: React.FC = () => {
           ))}
         </div>
       )}
-      {geoError && <div style={{ marginBottom: 8, padding: 10, background: '#FEE2E2', color: '#DC2626', borderRadius: 12, fontSize: 12, fontWeight: 500 }}>⚠️ {geoError}</div>}
+      <LocationPickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onPicked={c => { setMyCoords(c); setNearbyOn(true); }}
+      />
       {specOpen && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
           {SPECS.map(s => {
