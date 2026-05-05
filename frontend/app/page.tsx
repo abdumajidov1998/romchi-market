@@ -12,14 +12,14 @@ const SECTIONS: {
   sub: string;
   path: string;
 }[] = [
-  { id: 'romchi-ish', icon: 'briefcase', title: 'Romchi Ish', sub: "Termo · PVX · Alyumin ish va ishchi qidirish", path: '/romchi-ish' },
-  { id: 'usluga', icon: 'wrench', title: 'Uslugachilar', sub: 'Turli xizmatlar va uslugalar', path: '/usluga' },
-  { id: 'atxod', icon: 'recycle', title: 'Atxod oluvchilar', sub: 'Alyumin, PVX, Termo atxod sotish va sotib olish', path: '/atxod' },
-  { id: 'ustanofka', icon: 'hardhat', title: 'Ustanofka brigada', sub: "Tayyor rom va eshik-derazani o'rnatuvchi brigadalar", path: '/ustanofka' },
-  { id: 'stanok', icon: 'gear', title: 'Stanok remont', sub: "Stanok ta'mirlash va sozlash ustalari", path: '/stanok' },
-  { id: 'arkachilar', icon: 'rainbow', title: 'Arkachilar', sub: 'Profillarni ark shaklida tayyorlovchi ustalar', path: '/arkachilar' },
+  { id: 'ustanofka', icon: 'hardhat', title: 'Ustanovka brigadalar', sub: "Tayyor rom va eshik-derazani o'rnatuvchi brigadalar", path: '/ustanofka' },
+  { id: 'stanok', icon: 'gear', title: 'Stanok remont qiluvchilar', sub: "Stanok ta'mirlash va sozlash ustalari", path: '/stanok' },
   { id: 'stanok-ads', icon: 'factory', title: "Stanok e'lonlari", sub: 'Yangi va ishlatilgan stanoklar oldi-sotdi', path: '/stanok-ads' },
-  { id: 'delivery', icon: 'truck', title: 'Dostavkachilar', sub: 'Yuk tashish va kichik dostavka xizmatlari', path: '/delivery' },
+  { id: 'atxod', icon: 'recycle', title: 'Atxod oluvchilar', sub: 'Alyumin, PVX, Termo atxod sotish va sotib olish', path: '/atxod' },
+  { id: 'usluga', icon: 'wrench', title: 'Uslugachilar', sub: 'Turli xizmatlar va uslugalar', path: '/usluga' },
+  { id: 'arkachilar', icon: 'rainbow', title: 'Arkachilar', sub: 'Profillarni ark shaklida tayyorlovchi ustalar', path: '/arkachilar' },
+  { id: 'delivery', icon: 'truck', title: 'Dastavka', sub: 'Yuk tashish va kichik dostavka xizmatlari', path: '/delivery' },
+  { id: 'romchi-ish', icon: 'briefcase', title: 'Ish platformasi', sub: "Termo · PVX · Alyumin ish va ishchi qidirish", path: '/romchi-ish' },
 ];
 
 const NAME_KEY = 'romchi_user_name';
