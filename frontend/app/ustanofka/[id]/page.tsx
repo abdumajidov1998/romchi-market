@@ -37,7 +37,7 @@ export default function InstallBrigadeProfile() {
   return (
     <div style={{ maxWidth: 540, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => router.push(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
+        <button onClick={() => router.back()} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ fontWeight: 700, fontSize: 15 }}>Ustanofka brigada</div>
         <div style={{ width: 38 }} />
       </div>

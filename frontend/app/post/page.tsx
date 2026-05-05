@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Btn, Card, Chip, Field, Input, Textarea } from '@/components/ui';
 import { allSpecs, cities, regions } from '@/lib/data';
@@ -11,9 +11,9 @@ import { MapPicker } from '@/components/MapPickerLazy';
 const WORK_MAP: Record<string, string> = { 'To‘liq stavka': 'Full-time', 'Yarim stavka': 'Part-time', 'Loyiha': 'Project' };
 const WORK_MAP_REV: Record<string, string> = { 'Full-time': 'To‘liq stavka', 'Part-time': 'Yarim stavka', 'Project': 'Loyiha' };
 
-export default function PostJob() {
+function PostJobInner() {
   const router = useRouter();
-  const [params] = useSearchParams();
+  const params = useSearchParams();
   const editId = params.get('edit');
   const isEdit = !!editId;
 
@@ -120,7 +120,7 @@ export default function PostJob() {
   return (
     <form onSubmit={submit} style={{ maxWidth: 640, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button type="button" onClick={() => router.push(-1)} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>×</button>
+        <button type="button" onClick={() => router.back()} style={{ width: 38, height: 38, borderRadius: 12, background: '#fff', border: '1px solid var(--line)' }}>×</button>
         <div style={{ fontWeight: 700, fontSize: 15 }}>{isEdit ? 'E‘lonni tahrirlash' : 'E’lon joylash'}</div>
         <div style={{ width: 38 }} />
       </div>
@@ -238,4 +238,12 @@ export default function PostJob() {
       </div>
     </form>
   );
-};
+}
+
+export default function PostJob() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', padding: 40 }}>Yuklanmoqda…</div>}>
+      <PostJobInner />
+    </Suspense>
+  );
+}

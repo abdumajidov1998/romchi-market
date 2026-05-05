@@ -123,7 +123,7 @@ export default function CreateProfile() {
   return (
     <div style={{ maxWidth: 540, margin: '0 auto', paddingBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-        <button onClick={() => router.push(-1)} style={{ width: 40, height: 40, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 18 }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
+        <button onClick={() => router.back()} style={{ width: 40, height: 40, borderRadius: 12, background: '#fff', border: '1px solid var(--line)', fontSize: 18 }}><img src="/images/back.png" alt="orqaga" style={{ width: 16, height: 16, display: 'block', margin: 'auto' }} /></button>
         <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--muted)' }}>{isEdit ? 'Ishchi profilini tahrirlash' : 'Ishchi profili'}</div>
         <div style={{ width: 40 }} />
       </div>

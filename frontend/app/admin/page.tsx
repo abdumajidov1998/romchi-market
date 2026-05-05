@@ -375,7 +375,7 @@ export default function Admin() {
       })
       .catch(() => router.replace('/welcome'))
       .finally(() => setChecking(false));
-  }, [nav]);
+  }, [router]);
 
   if (checking) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Tekshirilmoqda…</div>;
   if (!allowed) return null;
