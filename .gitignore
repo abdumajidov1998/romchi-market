@@ -1,4 +1,4 @@
-# Per-module ignores live in frontend/.gitignore and backend-java/.gitignore.
+# Per-module ignores live in frontend/.gitignore and backend/.gitignore.
 # Anything here applies to the repo root.
 
 .DS_Store
@@ -6,8 +6,3 @@
 # Editor / IDE
 .claude/
 .idea/workspace.xml
-
-# Old Node backend's runtime data — kept on disk so existing uploads/DB
-# can be migrated, but never committed.
-backend/data/
-backend/uploads/

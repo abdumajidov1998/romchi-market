@@ -2,7 +2,7 @@
 
 Two-module project:
 
-- **`backend-java/`** — Spring Boot 4 REST API (Java 25, Maven). JWT auth,
+- **`backend/`** — Spring Boot 4 REST API (Java 25, Maven). JWT auth,
   SMS verification (Eskiz.uz), file uploads, JPA + Postgres/H2.
 - **`frontend/`** — Next.js 16 (React 19, Tailwind 4). All UI lives here.
 
@@ -10,7 +10,7 @@ Two-module project:
 
 ```bash
 # Terminal 1 — backend (H2 file db, dev profile)
-cd backend-java
+cd backend
 ./mvnw spring-boot:run        # http://localhost:3001
 
 # Terminal 2 — frontend
@@ -34,7 +34,7 @@ hosts.
 
 ## Environment
 
-Backend: see `backend-java/.env.example`. Required in prod:
+Backend: see `backend/.env.example`. Required in prod:
 
 - `JWT_SECRET` — 32+ char random string
 - `DATABASE_URL` — `jdbc:postgresql://…` or use the `dev` profile for H2

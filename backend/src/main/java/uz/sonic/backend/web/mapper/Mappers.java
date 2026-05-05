@@ -16,10 +16,12 @@ import java.util.Map;
  */
 @Component
 public class Mappers {
-    private final ObjectMapper json;
+    // Spring Boot 4's WebMvc starter no longer auto-configures an
+    // ObjectMapper bean, so we own one here. Jackson is only used to
+    // read/write the small JSON-encoded "specs" string in TEXT columns.
+    private final ObjectMapper json = new ObjectMapper();
 
-    public Mappers(ObjectMapper json) {
-        this.json = json;
+    public Mappers() {
     }
 
     public List<String> parseSpecs(String specs) {

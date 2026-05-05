@@ -1,13 +1,13 @@
 # Default Dockerfile builds the backend so a single-image deploy keeps
 # working out of the box. Each module also has its own Dockerfile —
-# prefer those (`backend-java/Dockerfile`, `frontend/Dockerfile`) when
+# prefer those (`backend/Dockerfile`, `frontend/Dockerfile`) when
 # deploying the two services separately, e.g. via render.yaml below.
 FROM eclipse-temurin:25-jdk AS build
 WORKDIR /src
-COPY backend-java/.mvn .mvn
-COPY backend-java/mvnw backend-java/pom.xml ./
+COPY backend/.mvn .mvn
+COPY backend/mvnw backend/pom.xml ./
 RUN ./mvnw -q -DskipTests dependency:go-offline
-COPY backend-java/src ./src
+COPY backend/src ./src
 RUN ./mvnw -q -DskipTests package -B && cp target/*.jar /app.jar
 
 FROM eclipse-temurin:25-jre

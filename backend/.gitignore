@@ -1,6 +1,10 @@
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
+
+# Local H2 dev database files and uploaded media
+data/
+uploads/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
