@@ -4,6 +4,8 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 FROM node:22-alpine AS build
+ARG BACKEND_ORIGIN=https://romchi-backend.onrender.com
+ENV BACKEND_ORIGIN=$BACKEND_ORIGIN
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

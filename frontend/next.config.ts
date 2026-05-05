@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
+// Next.js bakes rewrite destinations into routes-manifest.json at build
+// time, so BACKEND_ORIGIN must be present when `next build` runs — not
+// just at runtime. The Docker build image sets it via ARG/ENV so prod
+// deploys never see the localhost fallback.
+const BACKEND = process.env.BACKEND_ORIGIN || "http://localhost:3001";
+
 const nextConfig: NextConfig = {
   async rewrites() {
-    // Read at request-config time, not module-load time, so a
-    // BACKEND_ORIGIN supplied only at runtime (e.g. on Render) is
-    // honoured instead of the build-time `localhost` fallback.
-    const BACKEND = process.env.BACKEND_ORIGIN || "http://localhost:3001";
     return [
       { source: "/api/:path*", destination: `${BACKEND}/api/:path*` },
       { source: "/uploads/:path*", destination: `${BACKEND}/uploads/:path*` },
