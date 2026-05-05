@@ -7,6 +7,7 @@ import { OYNACHI_SUBSPECS } from '@/lib/constants';
 import { SpecIcon } from '@/components/SpecIcon';
 import { api, auth } from '@/lib/api';
 import { MapPicker } from '@/components/MapPickerLazy';
+import { cleanUzPhone, formatUzPhone, isValidUzPhone } from '@/lib/phone';
 
 const WORK_MAP: Record<string, string> = { 'To‘liq stavka': 'Full-time', 'Yarim stavka': 'Part-time', 'Loyiha': 'Project' };
 const WORK_MAP_REV: Record<string, string> = { 'Full-time': 'To‘liq stavka', 'Part-time': 'Yarim stavka', 'Project': 'Loyiha' };
@@ -62,11 +63,11 @@ function PostJobInner() {
 
   const ensureAuth = async (): Promise<boolean> => {
     if (isAuthed) return true;
-    const cleanPhone = phone.replace(/\s/g, '');
-    if (cleanPhone.replace(/\D/g, '').length < 9 || password.length < 4) {
+    if (!isValidUzPhone(phone) || password.length < 4) {
       setError('Telefon raqam va parolni to‘ldiring (parol kamida 4 belgi)');
       return false;
     }
+    const cleanPhone = cleanUzPhone(phone);
     try {
       const r = await api.register({ phone: cleanPhone, password, role: 'employer' });
       auth.set(r.token, r.user); return true;
@@ -131,7 +132,7 @@ function PostJobInner() {
             <div style={{ fontWeight: 700, marginBottom: 8 }}>Avval ro‘yxatdan o‘ting</div>
             <div style={{ color: 'var(--muted)', fontSize: 12, marginBottom: 10 }}>Keyinchalik shu telefon va parol bilan kirasiz</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <Field label="Telefon"><Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+998 __ ___ __ __" /></Field>
+              <Field label="Telefon"><Input value={phone} onChange={e => setPhone(formatUzPhone(e.target.value))} inputMode="tel" type="tel" maxLength={17} placeholder="+998 __ ___ __ __" /></Field>
               <Field label="Parol"><Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Kamida 4 belgi" /></Field>
             </div>
           </Card>

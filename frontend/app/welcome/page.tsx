@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Btn, Input } from '@/components/ui';
 import { api, auth } from '@/lib/api';
 import { Logo } from '@/components/Logo';
+import { cleanUzPhone, formatUzPhone, isValidUzPhone } from '@/lib/phone';
 
 const NAME_KEY = 'romchi_user_name';
 
@@ -64,10 +65,10 @@ export default function WelcomePage() {
 
   const sendCode = async () => {
     setError('');
-    const cleanPhone = phone.replace(/\s/g, '');
-    if (cleanPhone.replace(/\D/g, '').length < 12) {
+    if (!isValidUzPhone(phone)) {
       setError("Telefon raqamni to'liq kiriting"); return;
     }
+    const cleanPhone = cleanUzPhone(phone);
     setLoading(true);
     try {
       const r = await api.sendCode(cleanPhone);
@@ -86,7 +87,7 @@ export default function WelcomePage() {
     if (useCode.length !== 4) { setError('4 raqamli kodni kiriting'); return; }
     setLoading(true);
     try {
-      const cleanPhone = phone.replace(/\s/g, '');
+      const cleanPhone = cleanUzPhone(phone);
       const autoPassword = `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
       const res = await api.verifyCode({ phone: cleanPhone, code: useCode, password: autoPassword, role: 'worker' });
       auth.set(res.token, res.user);
@@ -118,9 +119,9 @@ export default function WelcomePage() {
         <div style={{ marginTop: 18 }}>
           <Input
             value={phone}
-            onChange={e => setPhone(e.target.value)}
+            onChange={e => setPhone(formatUzPhone(e.target.value))}
             placeholder="+998 __ ___ __ __"
-            inputMode="tel"
+            inputMode="tel" type="tel" maxLength={17}
             autoFocus
             style={{ fontSize: 20, padding: '16px 18px', letterSpacing: 1, textAlign: 'center', fontWeight: 600 }}
           />

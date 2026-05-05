@@ -2,6 +2,7 @@
 import React from 'react';
 import { Btn, Input } from './ui';
 import { api, auth, User } from '@/lib/api';
+import { cleanUzPhone, formatUzPhone, isValidUzPhone } from '@/lib/phone';
 
 type Step = 'phone' | 'code' | 'password';
 
@@ -27,10 +28,10 @@ export const PhoneVerify: React.FC<{
 
   const sendCode = async () => {
     setError('');
-    const cleanPhone = phone.replace(/\s/g, '');
-    if (cleanPhone.replace(/\D/g, '').length < 12) {
+    if (!isValidUzPhone(phone)) {
       setError('Telefon raqamni to\'liq kiriting'); return;
     }
+    const cleanPhone = cleanUzPhone(phone);
     setLoading(true);
     try {
       const r = await api.sendCode(cleanPhone);
@@ -47,7 +48,7 @@ export const PhoneVerify: React.FC<{
     if (code.length !== 4) { setError('4 raqamli kodni kiriting'); return; }
     setLoading(true);
     try {
-      const cleanPhone = phone.replace(/\s/g, '');
+      const cleanPhone = cleanUzPhone(phone);
       const res = await api.verifyCode({ phone: cleanPhone, code, password: password || undefined, role });
       if (res.isNew && !password) {
         setStep('password');
@@ -70,7 +71,7 @@ export const PhoneVerify: React.FC<{
     if (password.length < 4) { setError('Parol kamida 4 belgi bo\'lishi kerak'); return; }
     setLoading(true);
     try {
-      const cleanPhone = phone.replace(/\s/g, '');
+      const cleanPhone = cleanUzPhone(phone);
       const res = await api.verifyCode({ phone: cleanPhone, code, password, role });
       auth.set(res.token, res.user);
       onDone(res.user, res.isNew);
@@ -89,7 +90,8 @@ export const PhoneVerify: React.FC<{
             Telefon raqamingizga SMS kod yuboriladi
           </div>
           <Input
-            value={phone} onChange={e => setPhone(e.target.value)}
+            value={phone} onChange={e => setPhone(formatUzPhone(e.target.value))}
+            inputMode="tel" type="tel" maxLength={17}
             placeholder="+998 __ ___ __ __"
             style={{ fontSize: 18, padding: '14px 16px', letterSpacing: 1, marginBottom: 10 }}
           />
