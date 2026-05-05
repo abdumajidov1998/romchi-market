@@ -105,7 +105,7 @@ export const PhoneVerify: React.FC<{
           <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 4 }}>
             <b>{phone}</b> raqamiga 4 raqamli kod yuborildi
           </div>
-          {devCode && process.env.NODE_ENV === 'development' && (
+          {devCode && (
             <div style={{ background: '#FEF3C7', border: '1px solid #F59E0B', color: '#92400E', borderRadius: 10, padding: '10px 12px', fontSize: 13, marginTop: 8, marginBottom: 4 }}>
               🧪 Test rejimi: kod <b style={{ fontSize: 16, letterSpacing: 2 }}>{devCode}</b>
             </div>

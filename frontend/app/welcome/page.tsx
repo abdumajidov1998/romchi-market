@@ -144,7 +144,7 @@ export default function WelcomePage() {
             <b style={{ color: 'var(--ink)' }}>{phone}</b> raqamiga 4 xonali kod yuborildi
           </p>
         </div>
-        {devCode && process.env.NODE_ENV === 'development' && (
+        {devCode && (
           <div style={{ background: '#FEF3C7', border: '1px solid #F59E0B', color: '#92400E', borderRadius: 12, padding: '10px 14px', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>
             🧪 Test rejimi: <b style={{ fontSize: 16, letterSpacing: 2 }}>{devCode}</b>
           </div>
