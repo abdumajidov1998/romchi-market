@@ -92,14 +92,16 @@ export default function InstallBrigadeProfile() {
         </Card>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
-        <a href={b.phone ? `tel:${b.phone}` : undefined} style={{ textDecoration: 'none', opacity: b.phone ? 1 : .5, pointerEvents: b.phone ? 'auto' : 'none' }}>
-          <Btn full>📞 Qo'ng'iroq</Btn>
-        </a>
-        <a href={tgHref(b)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(b) ? undefined : 'none' }}>
-          <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
-        </a>
-      </div>
+      <Card style={{ marginTop: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <a href={b.phone ? `tel:${b.phone}` : undefined} style={{ textDecoration: 'none', opacity: b.phone ? 1 : .5, pointerEvents: b.phone ? 'auto' : 'none' }}>
+            <Btn full>📞 Qo'ng'iroq</Btn>
+          </a>
+          <a href={tgHref(b)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(b) ? undefined : 'none' }}>
+            <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
+          </a>
+        </div>
+      </Card>
     </div>
   );
 };
