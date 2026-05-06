@@ -121,6 +121,7 @@ export const api = {
     req<any>(`/jobs/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteJob: (id: string | number) =>
     req<{ ok: boolean }>(`/jobs/${id}`, { method: 'DELETE' }),
+  myJobs: () => req<any[]>('/me/jobs'),
   wasteBuyers: (params?: { city?: string; q?: string }) => {
     const clean = Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v));
     const qs = new URLSearchParams(clean as any).toString();

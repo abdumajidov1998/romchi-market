@@ -47,6 +47,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const [me, setMe] = React.useState<any>(null);
   const [profiles, setProfiles] = React.useState<any>(null);
+  const [jobs, setJobs] = React.useState<any[]>([]);
+  const [stanokAds, setStanokAds] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [deleting, setDeleting] = React.useState('');
   const [delError, setDelError] = React.useState('');
@@ -56,8 +58,14 @@ export default function ProfilePage() {
     try {
       const m = await api.me();
       setMe(m);
-      const p = await api.myProfiles();
+      const [p, j, a] = await Promise.all([
+        api.myProfiles(),
+        api.myJobs().catch(() => []),
+        api.myStanokAds().catch(() => []),
+      ]);
       setProfiles(p);
+      setJobs(j || []);
+      setStanokAds(a || []);
     } catch { auth.clear(); }
     finally { setLoading(false); }
   };
@@ -82,6 +90,22 @@ export default function ProfilePage() {
     finally { setDeleting(''); }
   };
 
+  const delJob = async (id: number) => {
+    setDeleting('job-' + id);
+    setDelError('');
+    try { await api.deleteJob(id); await load(); }
+    catch (e: any) { setDelError(e?.message || "O'chirishda xatolik"); }
+    finally { setDeleting(''); }
+  };
+
+  const delStanokAd = async (id: number) => {
+    setDeleting('stanok-ad-' + id);
+    setDelError('');
+    try { await api.deleteStanokAd(id); await load(); }
+    catch (e: any) { setDelError(e?.message || "O'chirishda xatolik"); }
+    finally { setDeleting(''); }
+  };
+
   if (loading) return <EmptyState icon="⏳" title="Yuklanmoqda..." sub="" />;
 
   if (!me) return (
@@ -94,7 +118,8 @@ export default function ProfilePage() {
   );
 
   const hasAny = profiles?.worker || profiles?.wasteBuyer || profiles?.usluga || profiles?.stanok
-              || profiles?.delivery || profiles?.installBrigada || profiles?.arkachi;
+              || profiles?.delivery || profiles?.installBrigada || profiles?.arkachi
+              || jobs.length > 0 || stanokAds.length > 0;
 
   return (
     <div style={{ maxWidth: 540, margin: '0 auto' }}>
@@ -165,6 +190,20 @@ export default function ProfilePage() {
           sub={`📍 ${profiles.delivery.city} · ${profiles.delivery.vehicle_model || ''}`}
           editPath="/delivery/create" onDelete={() => del('delivery')} deleting={deleting === 'delivery'} />
       )}
+      {jobs.map(j => (
+        <ProfileCard key={'job-' + j.id} icon="💼" title="Vakansiya (ish e'lon)"
+          name={j.title}
+          sub={`📍 ${j.city} · ${j.company} · ${(j.specs || []).join(', ')}`}
+          editPath={`/post?edit=${j.id}`}
+          onDelete={() => delJob(j.id)} deleting={deleting === 'job-' + j.id} />
+      ))}
+      {stanokAds.map(a => (
+        <ProfileCard key={'stanok-ad-' + a.id} icon="🏭" title="Stanok e'loni"
+          name={a.title}
+          sub={`📍 ${a.city} · ${a.stanokType || ''} · ${a.condition || ''}`}
+          editPath={`/stanok-ads/${a.id}/edit`}
+          onDelete={() => delStanokAd(a.id)} deleting={deleting === 'stanok-ad-' + a.id} />
+      ))}
 
       {delError && (
         <Card style={{ marginTop: 12, background: '#FEE2E2', border: '1px solid #DC2626', color: '#DC2626' }}>
@@ -191,6 +230,8 @@ export default function ProfilePage() {
         {!profiles?.installBrigada && (<button type="button" onClick={() => router.push('/ustanofka/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}><div style={{ fontSize: 20 }}>👷</div><div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Ustanofka</div></button>)}
         {!profiles?.arkachi && (<button type="button" onClick={() => router.push('/arkachilar/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}><div style={{ fontSize: 20 }}>🔩</div><div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Arkachi</div></button>)}
         {!profiles?.delivery && (<button type="button" onClick={() => router.push('/delivery/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}><div style={{ fontSize: 20 }}>🚚</div><div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Dostavka</div></button>)}
+        <button type="button" onClick={() => router.push('/post')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}><div style={{ fontSize: 20 }}>💼</div><div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Vakansiya</div></button>
+        <button type="button" onClick={() => router.push('/stanok-ads/create')} style={{ padding: '12px 8px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', background: '#fff', border: '1px solid var(--line)' }}><div style={{ fontSize: 20 }}>🏭</div><div style={{ fontWeight: 600, fontSize: 11, marginTop: 4 }}>Stanok e'lon</div></button>
       </div>
 
       <Btn variant="ghost" full style={{ marginTop: 20, color: '#DC2626' }} onClick={() => { auth.clear(); router.push('/'); }}>Chiqish</Btn>
