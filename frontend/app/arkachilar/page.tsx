@@ -34,59 +34,49 @@ const fmt = (n: number) => n ? n.toLocaleString('uz-UZ') : '---';
 const SpecVisual: React.FC<{ name: string; size?: number }> = ({ name, size = 32 }) => <SpecIcon name={name} size={size} />;
 
 const ArkachiCard: React.FC<{ a: any }> = ({ a }) => (
-  <Card>
+  <Card style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
     <Link href={`/arkachilar/${a.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div style={{ display: 'flex', gap: 12 }}>
-        {a.specs && a.specs.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
-            {a.specs.slice(0, 3).map((s: string) => (
-              <div key={s} style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--blue-50)', display: 'grid', placeItems: 'center' }}>
-                <SpecVisual name={s} size={28} />
-              </div>
-            ))}
-          </div>
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <b style={{ fontSize: 15 }}>{a.name}</b>
-            {a.verified && <span style={{ width: 16, height: 16, borderRadius: 8, background: 'var(--blue)', color: '#fff', display: 'inline-grid', placeItems: 'center', fontSize: 10 }}>✓</span>}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>📍 {a.city} · {a.district}</div>
-          {a.experience && <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>🔧 {a.experience}</div>}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
-            {(a.specs || []).map((s: string) => (
-              <span key={s} style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: 'var(--blue-50)', color: 'var(--blue)' }}>{s}</span>
-            ))}
-          </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <b style={{ fontSize: 15 }}>{a.name}</b>
+          {a.verified && <span style={{ width: 16, height: 16, borderRadius: 8, background: 'var(--blue)', color: '#fff', display: 'inline-grid', placeItems: 'center', fontSize: 10 }}>✓</span>}
         </div>
+        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>📍 {a.city} · {a.district}</div>
+        {a.experience && <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>🔧 {a.experience}</div>}
       </div>
 
-      <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
         {PRICES.map(m => {
           const price = a[m.key] || 0;
-          if (!price) return null;
+          if (!price && !a.specs?.includes(m.label)) return null;
           return (
             <div key={m.key} style={{
-              display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
-              background: 'var(--blue-50)', borderRadius: 8, fontSize: 11,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '8px 12px', background: 'var(--blue-50)', borderRadius: 10,
             }}>
-              <SpecVisual name={m.spec} size={16} />
-              <span style={{ fontWeight: 700, color: 'var(--blue)' }}>{fmt(price)}</span>
-              <span style={{ color: 'var(--muted)', fontSize: 9 }}>m</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <SpecVisual name={m.spec} size={24} />
+                <span style={{ fontWeight: 600, fontSize: 13 }}>{m.label}</span>
+              </div>
+              <span style={{ fontWeight: 700, fontSize: 13, color: price > 0 ? 'var(--blue)' : 'var(--muted)' }}>
+                {price > 0 ? `${fmt(price)} so'm/m` : '---'}
+              </span>
             </div>
           );
         })}
       </div>
     </Link>
 
-    <div style={{ height: 1, background: 'var(--line)', margin: '12px 0' }} />
-    <div style={{ display: 'flex', gap: 6 }}>
-      <a href={a.phone ? `tel:${a.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: a.phone ? 1 : .5, pointerEvents: a.phone ? 'auto' : 'none' }}>
-        <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
-      </a>
-      <a href={tgHref(a)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(a) ? undefined : 'none' }}>
-        <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
-      </a>
+    <div style={{ marginTop: 'auto', paddingTop: 16 }}>
+      <div style={{ height: 1, background: 'var(--line)', marginBottom: 12 }} />
+      <div style={{ display: 'flex', gap: 6 }}>
+        <a href={a.phone ? `tel:${a.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: a.phone ? 1 : .5, pointerEvents: a.phone ? 'auto' : 'none' }}>
+          <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
+        </a>
+        <a href={tgHref(a)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(a) ? undefined : 'none' }}>
+          <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
+        </a>
+      </div>
     </div>
   </Card>
 );

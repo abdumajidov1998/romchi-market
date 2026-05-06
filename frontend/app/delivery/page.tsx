@@ -45,7 +45,7 @@ const VehicleThumb: React.FC<{ src: string | null; icon: string; size?: number }
 };
 
 const DriverCard: React.FC<{ d: any }> = ({ d }) => (
-  <Card>
+  <Card style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
     <Link href={`/delivery/${d.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', gap: 12 }}>
       <VehicleThumb {...vehicleFor(d)} size={64} />
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -61,14 +61,16 @@ const DriverCard: React.FC<{ d: any }> = ({ d }) => (
       </div>
     </Link>
 
-    <div style={{ height: 1, background: 'var(--line)', margin: '12px 0' }} />
-    <div style={{ display: 'flex', gap: 6 }}>
-      <a href={d.phone ? `tel:${d.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: d.phone ? 1 : .5, pointerEvents: d.phone ? 'auto' : 'none' }}>
-        <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
-      </a>
-      <a href={tgHref(d)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(d) ? undefined : 'none' }}>
-        <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
-      </a>
+    <div style={{ marginTop: 'auto', paddingTop: 16 }}>
+      <div style={{ height: 1, background: 'var(--line)', marginBottom: 12 }} />
+      <div style={{ display: 'flex', gap: 6 }}>
+        <a href={d.phone ? `tel:${d.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: d.phone ? 1 : .5, pointerEvents: d.phone ? 'auto' : 'none' }}>
+          <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
+        </a>
+        <a href={tgHref(d)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(d) ? undefined : 'none' }}>
+          <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
+        </a>
+      </div>
     </div>
   </Card>
 );

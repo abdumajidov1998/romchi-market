@@ -206,7 +206,7 @@ export default function Workers() {
         {Header}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(360px,1fr))', gap: 16 }}>
           {filtered.map(w => (
-            <div key={w.id} style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 16, padding: 18, boxShadow: 'var(--shadow)' }}>
+            <div key={w.id} style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 16, padding: 18, boxShadow: 'var(--shadow)', display: 'flex', flexDirection: 'column', height: '100%' }}>
               <Link href={`/workers/${w.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', gap: 12 }}>
@@ -231,14 +231,16 @@ export default function Workers() {
                   </div>
                 </div>
               </Link>
-              <div style={{ height: 1, background: 'var(--line)', margin: '14px 0' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <a href={w.phone ? `tel:${w.phone}` : undefined} style={{ textDecoration: 'none', opacity: w.phone ? 1 : .5, pointerEvents: w.phone ? 'auto' : 'none' }}>
-                  <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%' }}>📞 Qo‘ng‘iroq</Btn>
-                </a>
-                <a href={tgHref(w)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(w) ? undefined : 'none' }}>
-                  <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={20} /> Telegram</Btn>
-                </a>
+              <div style={{ marginTop: 'auto', paddingTop: 14 }}>
+                <div style={{ height: 1, background: 'var(--line)', marginBottom: 14 }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <a href={w.phone ? `tel:${w.phone}` : undefined} style={{ textDecoration: 'none', opacity: w.phone ? 1 : .5, pointerEvents: w.phone ? 'auto' : 'none' }}>
+                    <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%' }}>📞 Qo‘ng‘iroq</Btn>
+                  </a>
+                  <a href={tgHref(w)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(w) ? undefined : 'none' }}>
+                    <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={20} /> Telegram</Btn>
+                  </a>
+                </div>
               </div>
             </div>
           ))}

@@ -25,7 +25,7 @@ const haversine = (a: { lat: number; lng: number }, b: { lat: number; lng: numbe
 };
 
 const MasterCard: React.FC<{ m: any }> = ({ m }) => (
-  <Card>
+  <Card style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
     <Link href={`/stanok/${m.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <div>
@@ -69,14 +69,16 @@ const MasterCard: React.FC<{ m: any }> = ({ m }) => (
       </div>
     </Link>
 
-    <div style={{ height: 1, background: 'var(--line)', margin: '12px 0' }} />
-    <div style={{ display: 'flex', gap: 6 }}>
-      <a href={m.phone ? `tel:${m.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: m.phone ? 1 : .5, pointerEvents: m.phone ? 'auto' : 'none' }}>
-        <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
-      </a>
-      <a href={tgHref(m)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(m) ? undefined : 'none' }}>
-        <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
-      </a>
+    <div style={{ marginTop: 'auto', paddingTop: 16 }}>
+      <div style={{ height: 1, background: 'var(--line)', marginBottom: 12 }} />
+      <div style={{ display: 'flex', gap: 6 }}>
+        <a href={m.phone ? `tel:${m.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: m.phone ? 1 : .5, pointerEvents: m.phone ? 'auto' : 'none' }}>
+          <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
+        </a>
+        <a href={tgHref(m)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(m) ? undefined : 'none' }}>
+          <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
+        </a>
+      </div>
     </div>
   </Card>
 );
