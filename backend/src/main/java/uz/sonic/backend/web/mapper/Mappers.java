@@ -1,8 +1,8 @@
 package uz.sonic.backend.web.mapper;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import uz.sonic.backend.domain.entity.*;
 
 import java.util.LinkedHashMap;

@@ -81,7 +81,8 @@ public class SmsService {
         // Always log the issued code for diagnostics; the dev-mode `/api/auth/send-code`
         // response also echoes it back when no Eskiz creds are configured.
         log.info("[DEV] SMS code phone={} code={}", phone, code);
-        broadcaster.sendMessage(phone, "Sizning tasdiqlash kodingiz: " + code);
+        // Eskiz template id 17020 — must match this exact wording (incl. spacing).
+        broadcaster.sendMessage(phone, "Romchi mobil ilovasidan ro'yxatdan o'tish uchun tasdiqlash kodi: " + code);
         log.info("sms sent phone={} ip={}", phone, ip);
     }
 
