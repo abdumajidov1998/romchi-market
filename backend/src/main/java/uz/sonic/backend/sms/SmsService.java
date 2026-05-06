@@ -1,10 +1,13 @@
 package uz.sonic.backend.sms;
 
+import java.security.SecureRandom;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+
 import uz.sonic.backend.config.AppProperties;
 import uz.sonic.backend.domain.entity.SmsCode;
 import uz.sonic.backend.domain.entity.SmsLog;
@@ -12,10 +15,12 @@ import uz.sonic.backend.domain.repository.SmsCodeRepository;
 import uz.sonic.backend.domain.repository.SmsLogRepository;
 import uz.sonic.backend.web.error.ApiException;
 
-import java.security.SecureRandom;
-import java.util.Map;
-import java.util.Optional;
-
+/**
+ * Verification-code lifecycle: generates, stores, rate-limits, and asks the
+ * configured {@link MessageBroadcaster} to deliver. The actual transport
+ * (Eskiz HTTP, Telegram, …) lives in the {@link MessageSender} beans —
+ * this class doesn't know or care which one runs.
+ */
 @Service
 public class SmsService {
     private static final Logger log = LoggerFactory.getLogger(SmsService.class);
@@ -24,15 +29,14 @@ public class SmsService {
     private final SmsCodeRepository codes;
     private final SmsLogRepository logs;
     private final AppProperties props;
-    private final RestClient http = RestClient.create();
+    private final MessageBroadcaster broadcaster;
 
-    private volatile String cachedToken;
-    private volatile long tokenExpires;
-
-    public SmsService(SmsCodeRepository codes, SmsLogRepository logs, AppProperties props) {
+    public SmsService(SmsCodeRepository codes, SmsLogRepository logs,
+                      AppProperties props, MessageBroadcaster broadcaster) {
         this.codes = codes;
         this.logs = logs;
         this.props = props;
+        this.broadcaster = broadcaster;
     }
 
     private static long nowSec() {
@@ -74,8 +78,17 @@ public class SmsService {
                 .build());
         logs.save(SmsLog.builder().phone(phone).ip(ip == null ? "" : ip).createdAt(now).build());
 
-        sendViaEskiz(phone, code);
+        // Always log the issued code for diagnostics; the dev-mode `/api/auth/send-code`
+        // response also echoes it back when no Eskiz creds are configured.
+        log.info("[DEV] SMS code phone={} code={}", phone, code);
+        broadcaster.sendMessage(phone, renderMessage(code));
         log.info("sms sent phone={} ip={}", phone, ip);
+    }
+
+    private String renderMessage(String code) {
+        String tpl = props.sms().messageTemplate();
+        if (tpl == null || tpl.isBlank()) tpl = "Tasdiqlash kodi: {code}";
+        return tpl.replace("{code}", code);
     }
 
     public boolean isDevMode() {
@@ -93,12 +106,6 @@ public class SmsService {
 
     public void bumpAttempts(String phone) {
         codes.bumpAttempts(phone);
-    }
-
-    public String generateAndStoreCode(String phone) {
-        // Used by send-code only — returns the issued code so we can echo in dev mode.
-        String existing = codes.findById(phone).map(SmsCode::getCode).orElse(null);
-        return existing;
     }
 
     public long lastHourCount() {
@@ -119,63 +126,5 @@ public class SmsService {
         } catch (Exception e) {
             log.warn("sms cleanup failed", e);
         }
-    }
-
-    // --- Eskiz integration ---
-
-    private void sendViaEskiz(String phone, String code) {
-        String token = obtainEskizToken();
-        if (token == null) {
-            log.info("[DEV] SMS code phone={} code={}", phone, code);
-            return;
-        }
-        String clean = phone.replaceAll("\\D", "");
-        try {
-            http.post()
-                    .uri("https://notify.eskiz.uz/api/message/sms/send")
-                    .header("Authorization", "Bearer " + token)
-                    .header("Content-Type", "application/json")
-                    .body(Map.of(
-                            "mobile_phone", clean,
-                            "message", "Romchi Market: " + code + " - tasdiqlash kodi\n@romchi-market.onrender.com #" + code,
-                            "from", "4546"
-                    ))
-                    .retrieve()
-                    .toBodilessEntity();
-        } catch (Exception e) {
-            log.warn("eskiz send failed", e);
-            if (!isDevMode()) {
-                throw new ApiException(org.springframework.http.HttpStatus.BAD_GATEWAY, "SMS provider failed");
-            }
-        }
-    }
-
-    private String obtainEskizToken() {
-        if (isDevMode()) return null;
-        long now = nowSec();
-        if (cachedToken != null && now < tokenExpires) return cachedToken;
-        try {
-            Map<String, Object> resp = http.post()
-                    .uri("https://notify.eskiz.uz/api/auth/login")
-                    .header("Content-Type", "application/json")
-                    .body(Map.of(
-                            "email", props.sms().eskizEmail(),
-                            "password", props.sms().eskizPassword()))
-                    .retrieve()
-                    .body(Map.class);
-            if (resp == null) return null;
-            Object data = resp.get("data");
-            if (data instanceof Map<?, ?> m) {
-                Object t = m.get("token");
-                if (t != null) {
-                    cachedToken = t.toString();
-                    tokenExpires = now + 25 * 24 * 3600; // ~25 days, real token lasts 30
-                    return cachedToken;
-                }
-            }
-        } catch (Exception e) {
-            log.warn("eskiz auth failed", e);
-        }
-        return null;
     }
 }

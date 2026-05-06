@@ -23,6 +23,11 @@ public record AppProperties(
     public record Sms(
             String eskizEmail,
             String eskizPassword,
+            String sendUrl,
+            String loginUrl,
+            String senderId,
+            String testPhone,
+            String messageTemplate,
             int cooldownSec,
             int limitPhoneHour,
             int limitIpHour,
