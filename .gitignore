@@ -6,3 +6,6 @@
 # Editor / IDE
 .claude/
 .idea/workspace.xml
+
+# Local H2 dev database (when running backend from repo root, ./data ends up here)
+/data/
