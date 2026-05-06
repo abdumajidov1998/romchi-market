@@ -5,6 +5,9 @@ target/
 # Local H2 dev database files and uploaded media
 data/
 uploads/
+
+# Local secrets — never commit. Use .env.example as the template.
+.env
 !**/src/main/**/target/
 !**/src/test/**/target/
 

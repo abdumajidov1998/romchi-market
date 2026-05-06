@@ -40,6 +40,10 @@ public class SmsVerificationSender implements MessageSender {
     private static final Logger log = LoggerFactory.getLogger(SmsVerificationSender.class);
     private static final Pattern INTERNATIONAL_PHONE = Pattern.compile("^\\+[0-9]{7,15}$");
     private static final int MAX_RETRIES = 3;
+    // Constants per the TZ — bypass real delivery for the QA test number,
+    // and use the Eskiz sender id this account is registered with.
+    private static final String TEST_PHONE = "+998111111111";
+    private static final String SENDER_ID = "4546";
 
     private final RestTemplate restTemplate;
     private final AppProperties props;
@@ -60,8 +64,7 @@ public class SmsVerificationSender implements MessageSender {
     public void sendMessage(String phoneNumber, String message) {
         AppProperties.Sms cfg = props.sms();
 
-        // Configured test phone short-circuits — never hits Eskiz, used by QA.
-        if (phoneNumber.equals(cfg.testPhone())) {
+        if (TEST_PHONE.equals(phoneNumber)) {
             log.info("test phone — skip real SMS: phone={}", phoneNumber);
             return;
         }
@@ -114,11 +117,10 @@ public class SmsVerificationSender implements MessageSender {
     }
 
     private HttpEntity<Map<String, String>> buildSendRequest(String phoneNumber, String message) {
-        AppProperties.Sms cfg = props.sms();
         Map<String, String> body = Map.of(
                 "mobile_phone", phoneNumber.startsWith("+") ? phoneNumber.substring(1) : phoneNumber,
                 "message", message,
-                "from", cfg.senderId()
+                "from", SENDER_ID
         );
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);

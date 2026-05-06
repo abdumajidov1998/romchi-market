@@ -39,13 +39,12 @@ romchi:
   admin:
     phones: ${ADMIN_PHONES:}
   sms:
-    eskiz-email: ${ESKIZ_EMAIL:}
-    eskiz-password: ${ESKIZ_PASSWORD:}
+    # TZ-style names take priority (SMS_USERNAME / SMS_PASSWORD); the
+    # ESKIZ_* fallbacks stay for older deploys that still use them.
+    eskiz-email: ${SMS_USERNAME:${ESKIZ_EMAIL:}}
+    eskiz-password: ${SMS_PASSWORD:${ESKIZ_PASSWORD:}}
     send-url: ${SMS_SEND_URL:https://notify.eskiz.uz/api/message/sms/send}
     login-url: ${SMS_LOGIN_URL:https://notify.eskiz.uz/api/auth/login}
-    sender-id: ${SMS_SENDER_ID:4546}
-    test-phone: ${SMS_TEST_PHONE:+998111111111}
-    message-template: "${SMS_MESSAGE_TEMPLATE:Romchi Market - tasdiqlash kodi: {code}}"
     cooldown-sec: ${SMS_COOLDOWN_SEC:60}
     limit-phone-hour: ${SMS_LIMIT_PHONE_HOUR:10}
     limit-ip-hour: ${SMS_LIMIT_IP_HOUR:30}

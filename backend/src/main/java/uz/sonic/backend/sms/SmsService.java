@@ -81,14 +81,8 @@ public class SmsService {
         // Always log the issued code for diagnostics; the dev-mode `/api/auth/send-code`
         // response also echoes it back when no Eskiz creds are configured.
         log.info("[DEV] SMS code phone={} code={}", phone, code);
-        broadcaster.sendMessage(phone, renderMessage(code));
+        broadcaster.sendMessage(phone, "Sizning tasdiqlash kodingiz: " + code);
         log.info("sms sent phone={} ip={}", phone, ip);
-    }
-
-    private String renderMessage(String code) {
-        String tpl = props.sms().messageTemplate();
-        if (tpl == null || tpl.isBlank()) tpl = "Tasdiqlash kodi: {code}";
-        return tpl.replace("{code}", code);
     }
 
     public boolean isDevMode() {
