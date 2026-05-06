@@ -43,13 +43,6 @@ export default function InstallBrigadeProfile() {
       </div>
 
       <Card style={{ textAlign: 'center', padding: '22px 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
-          {(b.specs || []).map((s: string) => (
-            <div key={s} style={{ width: 56, height: 56, borderRadius: 14, background: 'var(--blue-50)', display: 'grid', placeItems: 'center' }}>
-              <SpecVisual name={s} size={44} />
-            </div>
-          ))}
-        </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 6, alignItems: 'center' }}>
           <div style={{ fontWeight: 800, fontSize: 18 }}>{b.name}</div>
           {b.verified && <span style={{ width: 16, height: 16, borderRadius: 8, background: 'var(--blue)', color: '#fff', display: 'inline-grid', placeItems: 'center', fontSize: 10 }}>✓</span>}
@@ -60,11 +53,6 @@ export default function InstallBrigadeProfile() {
             {b.teamSize ? `👷 ${b.teamSize} kishilik brigada` : ''}{b.teamSize && b.experience ? ' · ' : ''}{b.experience ? `🔧 ${b.experience}` : ''}
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
-          {(b.specs || []).map((s: string) => (
-            <span key={s} style={{ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: 'var(--blue-50)', color: 'var(--blue)' }}>{s}</span>
-          ))}
-        </div>
       </Card>
 
       <Card style={{ marginTop: 12 }}>

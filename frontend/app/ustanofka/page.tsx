@@ -36,45 +36,33 @@ const SpecVisual: React.FC<{ name: string; size?: number }> = ({ name, size = 32
 const BrigadaCard: React.FC<{ b: any }> = ({ b }) => (
   <Card>
     <Link href={`/ustanofka/${b.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div style={{ display: 'flex', gap: 12 }}>
-        {b.specs && b.specs.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
-            {b.specs.slice(0, 3).map((s: string) => (
-              <div key={s} style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--blue-50)', display: 'grid', placeItems: 'center' }}>
-                <SpecVisual name={s} size={28} />
-              </div>
-            ))}
-          </div>
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <b style={{ fontSize: 15 }}>{b.name}</b>
-            {b.verified && <span style={{ width: 16, height: 16, borderRadius: 8, background: 'var(--blue)', color: '#fff', display: 'inline-grid', placeItems: 'center', fontSize: 10 }}>✓</span>}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>📍 {b.city} · {b.district}</div>
-          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
-            {b.teamSize ? `👷 ${b.teamSize} kishi` : ''}{b.experience ? ` · 🔧 ${b.experience}` : ''}
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
-            {(b.specs || []).map((s: string) => (
-              <span key={s} style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: 'var(--blue-50)', color: 'var(--blue)' }}>{s}</span>
-            ))}
-          </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <b style={{ fontSize: 15 }}>{b.name}</b>
+          {b.verified && <span style={{ width: 16, height: 16, borderRadius: 8, background: 'var(--blue)', color: '#fff', display: 'inline-grid', placeItems: 'center', fontSize: 10 }}>✓</span>}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>📍 {b.city} · {b.district}</div>
+        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
+          {b.teamSize ? `👷 ${b.teamSize} kishi` : ''}{b.experience ? ` · 🔧 ${b.experience}` : ''}
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
         {PRICES.map(m => {
           const price = b[m.key] || 0;
-          if (!price) return null;
+          if (!price && !b.specs?.includes(m.label)) return null;
           return (
             <div key={m.key} style={{
-              display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
-              background: 'var(--blue-50)', borderRadius: 8, fontSize: 11,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '8px 12px', background: 'var(--blue-50)', borderRadius: 10,
             }}>
-              <SpecVisual name={m.spec} size={16} />
-              <span style={{ fontWeight: 700, color: 'var(--blue)' }}>{fmt(price)}</span>
-              <span style={{ color: 'var(--muted)', fontSize: 9 }}>m²</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <SpecVisual name={m.spec} size={28} />
+                <span style={{ fontWeight: 600, fontSize: 13 }}>{m.label}</span>
+              </div>
+              <span style={{ fontWeight: 700, fontSize: 13, color: price > 0 ? 'var(--blue)' : 'var(--muted)' }}>
+                {price > 0 ? `${fmt(price)} so'm/m²` : '---'}
+              </span>
             </div>
           );
         })}
