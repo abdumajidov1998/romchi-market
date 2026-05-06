@@ -99,7 +99,7 @@ export default function StanokProfile() {
         <a href={m.phone ? `tel:${m.phone}` : undefined} style={{ textDecoration: 'none', opacity: m.phone ? 1 : .5, pointerEvents: m.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo'ng'iroq</Btn>
         </a>
-        <a href={tgHref(m.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(m.telegram) ? undefined : 'none' }}>
+        <a href={tgHref(m)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(m) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

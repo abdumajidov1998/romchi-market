@@ -112,7 +112,7 @@ export default function WorkerProfile() {
         <a href={w.phone ? `tel:${w.phone}` : undefined} style={{ textDecoration: 'none', opacity: w.phone ? 1 : .5, pointerEvents: w.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo‘ng‘iroq</Btn>
         </a>
-        <a href={tgHref(w.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(w.telegram) ? undefined : 'none' }}>
+        <a href={tgHref(w)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(w) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

@@ -136,7 +136,7 @@ export default function JobDetail() {
           <a href={j.phone ? `tel:${j.phone}` : undefined} style={{ textDecoration: 'none', opacity: j.phone ? 1 : .5, pointerEvents: j.phone ? 'auto' : 'none' }}>
             <Btn full>📞 Qo‘ng‘iroq</Btn>
           </a>
-          <a href={tgHref(j.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(j.telegram) ? undefined : 'none' }}>
+          <a href={tgHref(j)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(j) ? undefined : 'none' }}>
             <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
           </a>
         </div>

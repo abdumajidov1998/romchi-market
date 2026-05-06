@@ -108,7 +108,7 @@ export default function InstallBrigadeProfile() {
         <a href={b.phone ? `tel:${b.phone}` : undefined} style={{ textDecoration: 'none', opacity: b.phone ? 1 : .5, pointerEvents: b.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo'ng'iroq</Btn>
         </a>
-        <a href={tgHref(b.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(b.telegram) ? undefined : 'none' }}>
+        <a href={tgHref(b)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(b) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

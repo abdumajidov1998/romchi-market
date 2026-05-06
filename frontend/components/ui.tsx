@@ -4,10 +4,29 @@ import Link from 'next/link';
 import type { Worker, Job } from '@/lib/data';
 import { SpecIcon } from './SpecIcon';
 
-export const tgHref = (telegram?: string | null): string | undefined => {
-  if (!telegram) return undefined;
-  const clean = String(telegram).replace(/^@/, '').trim();
-  return clean ? `https://t.me/${clean}` : undefined;
+// Build a Telegram deep-link from a profile/listing.
+// 1) If the user supplied a username, use that (canonical).
+// 2) Otherwise fall back to `https://t.me/+998…` — Telegram will resolve it
+//    when the recipient has phone visibility set to "Everybody" (or when the
+//    viewer already has them in contacts). Better than no contact button at
+//    all when the user skipped the optional Telegram username field.
+export const tgHref = (
+  source?: string | null | { telegram?: string | null; phone?: string | null }
+): string | undefined => {
+  if (!source) return undefined;
+  if (typeof source === 'string') {
+    const clean = source.replace(/^@/, '').trim();
+    return clean ? `https://t.me/${clean}` : undefined;
+  }
+  if (source.telegram) {
+    const clean = String(source.telegram).replace(/^@/, '').trim();
+    if (clean) return `https://t.me/${clean}`;
+  }
+  if (source.phone) {
+    const digits = String(source.phone).replace(/\D/g, '');
+    if (digits.length >= 9) return `https://t.me/+${digits}`;
+  }
+  return undefined;
 };
 
 export const TelegramIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
@@ -151,8 +170,8 @@ export const WorkerCard: React.FC<{ worker: Worker; compact?: boolean }> = ({ wo
                 <Btn variant="soft" style={{ padding: '8px 12px', fontSize: 13 }}>📞 Qo‘ng‘iroq</Btn>
               </a>
             )}
-            {tgHref((worker as any).telegram) && (
-              <a href={tgHref((worker as any).telegram)} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>
+            {tgHref(worker as any) && (
+              <a href={tgHref(worker as any)} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>
                 <Btn variant="soft" style={{ padding: '8px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}><TelegramIcon size={20} /></Btn>
               </a>
             )}
@@ -201,8 +220,8 @@ export const JobCard: React.FC<{ job: Job }> = ({ job }) => (
       <a href={(job as any).phone ? `tel:${(job as any).phone}` : undefined} onClick={e => e.stopPropagation()} style={{ flex: 1, textDecoration: 'none', opacity: (job as any).phone ? 1 : .5, pointerEvents: (job as any).phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo‘ng‘iroq</Btn>
       </a>
-      {tgHref((job as any).telegram) && (
-        <a href={tgHref((job as any).telegram)} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ flex: 1, textDecoration: 'none' }}>
+      {tgHref(job as any) && (
+        <a href={tgHref(job as any)} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ flex: 1, textDecoration: 'none' }}>
           <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
         </a>
       )}

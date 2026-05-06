@@ -102,7 +102,7 @@ export default function UslugaProfile() {
         <a href={p.phone ? `tel:${p.phone}` : undefined} style={{ textDecoration: 'none', opacity: p.phone ? 1 : .5, pointerEvents: p.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo'ng'iroq</Btn>
         </a>
-        <a href={tgHref(p.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(p.telegram) ? undefined : 'none' }}>
+        <a href={tgHref(p)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(p) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

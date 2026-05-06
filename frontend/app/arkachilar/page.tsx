@@ -84,7 +84,7 @@ const ArkachiCard: React.FC<{ a: any }> = ({ a }) => (
       <a href={a.phone ? `tel:${a.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: a.phone ? 1 : .5, pointerEvents: a.phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
       </a>
-      <a href={tgHref(a.telegram)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(a.telegram) ? undefined : 'none' }}>
+      <a href={tgHref(a)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(a) ? undefined : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
       </a>
     </div>

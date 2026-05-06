@@ -74,7 +74,7 @@ const MasterCard: React.FC<{ m: any }> = ({ m }) => (
       <a href={m.phone ? `tel:${m.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: m.phone ? 1 : .5, pointerEvents: m.phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
       </a>
-      <a href={tgHref(m.telegram)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(m.telegram) ? undefined : 'none' }}>
+      <a href={tgHref(m)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(m) ? undefined : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
       </a>
     </div>

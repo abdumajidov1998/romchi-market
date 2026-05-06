@@ -104,7 +104,7 @@ export default function ArkachiProfile() {
         <a href={a.phone ? `tel:${a.phone}` : undefined} style={{ textDecoration: 'none', opacity: a.phone ? 1 : .5, pointerEvents: a.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo'ng'iroq</Btn>
         </a>
-        <a href={tgHref(a.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(a.telegram) ? undefined : 'none' }}>
+        <a href={tgHref(a)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(a) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

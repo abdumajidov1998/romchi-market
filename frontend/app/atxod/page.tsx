@@ -66,7 +66,7 @@ const BuyerCard: React.FC<{ b: any }> = ({ b }) => (
       <a href={b.phone ? `tel:${b.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: b.phone ? 1 : .5, pointerEvents: b.phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
       </a>
-      <a href={tgHref(b.telegram)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(b.telegram) ? undefined : 'none' }}>
+      <a href={tgHref(b)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(b) ? undefined : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
       </a>
     </div>

@@ -236,7 +236,7 @@ export default function Workers() {
                 <a href={w.phone ? `tel:${w.phone}` : undefined} style={{ textDecoration: 'none', opacity: w.phone ? 1 : .5, pointerEvents: w.phone ? 'auto' : 'none' }}>
                   <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%' }}>📞 Qo‘ng‘iroq</Btn>
                 </a>
-                <a href={tgHref(w.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(w.telegram) ? undefined : 'none' }}>
+                <a href={tgHref(w)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(w) ? undefined : 'none' }}>
                   <Btn variant="soft" style={{ padding: 9, fontSize: 13, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={20} /> Telegram</Btn>
                 </a>
               </div>

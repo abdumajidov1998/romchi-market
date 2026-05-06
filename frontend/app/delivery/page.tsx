@@ -66,7 +66,7 @@ const DriverCard: React.FC<{ d: any }> = ({ d }) => (
       <a href={d.phone ? `tel:${d.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: d.phone ? 1 : .5, pointerEvents: d.phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
       </a>
-      <a href={tgHref(d.telegram)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(d.telegram) ? undefined : 'none' }}>
+      <a href={tgHref(d)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(d) ? undefined : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
       </a>
     </div>

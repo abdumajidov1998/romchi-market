@@ -112,7 +112,7 @@ export default function StanokAdDetail() {
         <a href={d.phone ? `tel:${d.phone}` : undefined} style={{ textDecoration: 'none', opacity: d.phone ? 1 : .5, pointerEvents: d.phone ? 'auto' : 'none' }}>
           <Btn full>📞 Qo'ng'iroq</Btn>
         </a>
-        <a href={tgHref(d.telegram)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(d.telegram) ? undefined : 'none' }}>
+        <a href={tgHref(d)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: tgHref(d) ? undefined : 'none' }}>
           <Btn variant="soft" full style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><TelegramIcon size={22} /> Telegram</Btn>
         </a>
       </div>

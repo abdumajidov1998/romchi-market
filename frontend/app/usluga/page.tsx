@@ -80,7 +80,7 @@ const ProviderCard: React.FC<{ p: any }> = ({ p }) => (
       <a href={p.phone ? `tel:${p.phone}` : undefined} style={{ flex: 1, textDecoration: 'none', opacity: p.phone ? 1 : .5, pointerEvents: p.phone ? 'auto' : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13 }}>📞 Qo'ng'iroq</Btn>
       </a>
-      <a href={tgHref(p.telegram)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(p.telegram) ? undefined : 'none' }}>
+      <a href={tgHref(p)} target="_blank" rel="noreferrer" style={{ flex: 1, textDecoration: 'none', display: tgHref(p) ? undefined : 'none' }}>
         <Btn variant="soft" style={{ width: '100%', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><TelegramIcon size={18} /> Telegram</Btn>
       </a>
     </div>
