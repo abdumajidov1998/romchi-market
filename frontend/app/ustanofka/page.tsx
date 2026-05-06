@@ -56,10 +56,7 @@ const BrigadaCard: React.FC<{ b: any }> = ({ b }) => (
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '8px 12px', background: 'var(--blue-50)', borderRadius: 10,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <SpecVisual name={m.spec} size={28} />
-                <span style={{ fontWeight: 600, fontSize: 13 }}>{m.label}</span>
-              </div>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>{m.label}</span>
               <span style={{ fontWeight: 700, fontSize: 13, color: price > 0 ? 'var(--blue)' : 'var(--muted)' }}>
                 {price > 0 ? `${fmt(price)} so'm/m²` : '---'}
               </span>

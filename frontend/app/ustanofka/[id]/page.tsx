@@ -66,10 +66,7 @@ export default function InstallBrigadeProfile() {
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '12px 14px', background: price > 0 ? '#EBF5FF' : 'var(--bg)', borderRadius: 12,
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <SpecVisual name={m.spec} size={32} />
-                  <span style={{ fontWeight: 600, fontSize: 15 }}>{m.label}</span>
-                </div>
+                <span style={{ fontWeight: 600, fontSize: 15 }}>{m.label}</span>
                 <span style={{ fontWeight: 800, fontSize: 16, color: price > 0 ? 'var(--blue)' : 'var(--muted)' }}>
                   {price > 0 ? `${fmt(price)} so'm/m²` : '---'}
                 </span>
