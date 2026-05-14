@@ -1,9 +1,9 @@
 import React from 'react';
 
 const ICONS: Record<string, string> = {
-  'Kesish stanogi': '/images/stanok/kesish.png',
-  'Payvandlash stanogi': '/images/stanok/payvandlash.png',
-  'Pressovka stanogi': '/images/stanok/pressovka.png',
+  'Kesish stanogi': '/images/stanok/payvandlash.png',
+  'Payvandlash stanogi': '/images/stanok/pressovka.png',
+  'Pressovka stanogi': '/images/stanok/kesish.png',
   'Frezerlash stanogi': '/images/stanok/frezerlash.png',
   'Kompressor': '/images/stanok/kompressor.png',
   'Arra chaxlovchi': '/images/stanok/arra-chaxlovchi.png',
