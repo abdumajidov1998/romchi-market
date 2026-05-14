@@ -19,7 +19,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: ALLOWED_ORIGINS
-        value: https://romchi-frontend.onrender.com
+        value: https://servis.romchi.uz,https://romchi-frontend.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: romchi-db
